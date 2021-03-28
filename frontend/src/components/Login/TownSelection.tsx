@@ -46,6 +46,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>('');
   const [searchOutput, setSearchOutput] = useState<SearchUsersResponse>({users: []});
+  const [neighborStatus, setNeighborStatus] = useState<NeighborStatus>(NeighborStatus.SendRequest);
   const [newTownName, setNewTownName] = useState<string>('');
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
@@ -290,6 +291,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
                   <Box display='flex' justifyContent='space-between' p='1' key={user._id} borderWidth='1px' alignItems='center'>
                     <Text>{user.username}</Text>
                     <Button handleClick={() => handleFriendRequestClick(user)}>{ labelNeighborStatus(user.relationship) }</Button>
+                    <Button>{ neighborStatus }</Button>
                   </Box>
                 )}
               </Box>
