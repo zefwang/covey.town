@@ -29,13 +29,6 @@ interface TownSelectionProps {
   doLogin: (iniData: TownJoinResponse) => Promise<boolean>
 }
 
-export enum NeighborStatus {
-  SendRequest = 'Send Friend Request',
-  Sent = 'Friend Request Sent',
-  AcceptRequest = 'Accept Friend Request',
-  Friends = 'Friends',
-}
-
 export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Element {
   const [inputUserName, setInputUserName] = useState<string>(Video.instance()?.userName || '');
   const [inputPassword, setInputPassword] = useState<string>('');
@@ -47,7 +40,6 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>('');
   const [searchOutput, setSearchOutput] = useState<SearchUsersResponse>({users: []});
-  const [neighborStatus, setNeighborStatus] = useState<NeighborStatus>(NeighborStatus.SendRequest);
   const [newTownName, setNewTownName] = useState<string>('');
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
@@ -202,7 +194,8 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
 
   const handleSearchClick = async () => {
     const searchResults = await apiClient.searchForUsersByUsername({
-      username: searchInput
+      username: searchInput,
+      userIdSearching: loginResponse._id
     })
     setSearchOutput(searchResults);
   }
@@ -266,7 +259,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
                 {searchOutput.users.map((user) =>
                   <Box display='flex' justifyContent='space-between' p='1' key={user._id} borderWidth='1px' alignItems='center'>
                     <Text>{user.username}</Text>
-                    <Button>{ neighborStatus }</Button>
+                    <Button>{ user.relationship }</Button>
                   </Box>
                 )}
               </Box>

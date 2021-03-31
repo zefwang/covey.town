@@ -122,6 +122,7 @@ export interface SearchUsersResponse {
   users: {
     _id: string,
     username: string,
+    relationship: NeighborStatus
   }[]
 }
 
