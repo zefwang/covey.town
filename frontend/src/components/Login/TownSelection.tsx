@@ -22,7 +22,13 @@ import {
 } from '@chakra-ui/react';
 import useVideoContext from '../VideoCall/VideoFrontend/hooks/useVideoContext/useVideoContext';
 import Video from '../../classes/Video/Video';
-import { LoginResponse, CoveyTownInfo, TownJoinResponse, SearchUsersResponse } from '../../classes/TownsServiceClient';
+import {
+  LoginResponse,
+  CoveyTownInfo,
+  TownJoinResponse,
+  SearchUsersResponse,
+  NeighborStatus
+} from '../../classes/TownsServiceClient';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
 
 interface TownSelectionProps {
@@ -206,6 +212,30 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
     }
   }
 
+  const handleFriendRequestClick = async (user: {_id: string, relationship: NeighborStatus, username: string}) => {
+    if (user.relationship === "unknown") { // Send friend request
+      const addNeighborResponse = await apiClient.sendAddNeighborRequest({
+        currentUserId: loginResponse._id,
+        UserIdToRequest: user._id
+      })
+      user.relationship = 'requestSent';
+    } else if (user.relationship === 'requestReceived') {
+      // React to request
+    }
+  }
+
+  const labelNeighborStatus = (relationship: NeighborStatus) => {
+    if (relationship === "unknown") {
+      return 'Add Friend';
+    } else if (relationship === 'requestSent') {
+      return 'Request Sent';
+    } else if (relationship === 'requestReceived') {
+      return 'Reply to Request'
+    } else if (relationship === 'neighbor') {
+      return 'Neighbors'
+    }
+  }
+
   return (
     <>
       <form>
@@ -259,7 +289,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
                 {searchOutput.users.map((user) =>
                   <Box display='flex' justifyContent='space-between' p='1' key={user._id} borderWidth='1px' alignItems='center'>
                     <Text>{user.username}</Text>
-                    <Button>{ user.relationship }</Button>
+                    <Button handleClick={() => handleFriendRequestClick(user)}>{ labelNeighborStatus(user.relationship) }</Button>
                   </Box>
                 )}
               </Box>
