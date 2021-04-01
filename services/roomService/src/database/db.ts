@@ -59,7 +59,8 @@ export default class DatabaseController {
 
     constructor() {
         // assert(process.env.MONGO_URL, 'Must have Mongo URL to connect to database');
-        this.client = new MongoClient(process.env.MONGO_URL || 'mongodb+srv://dev-user:cs4530COVEY@cluster-dev.vpr5c.mongodb.net/coveytown?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
+        assert(process.env.MONGO_URL);
+        this.client = new MongoClient(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true });
     }
 
   async connect(): Promise<void> {

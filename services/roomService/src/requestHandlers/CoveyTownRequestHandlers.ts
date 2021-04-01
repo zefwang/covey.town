@@ -390,7 +390,7 @@ export async function acceptRequestHandler(requestData: AcceptNeighborRequestReq
 
       const neighborsListWithOnline = neighborsList.users.map<UsersListWithOnline>((neighbor: UsersList) => {
         const coveyTownID = store.checkIfUserOnline(neighbor.username);
-        if (coveyTownID !== 'user_not_online') {
+        if (coveyTownID === 'user_not_online') {
           return { _id: neighbor._id, username: neighbor.username, isOnline: false  };
         }
         return { _id: neighbor._id, username: neighbor.username, isOnline:  true, coveyTownID: coveyTownID };
