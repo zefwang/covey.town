@@ -70,4 +70,12 @@ export default class CoveyTownsStore {
     return false;
   }
 
+  checkIfUserOnline(username: string): string {
+    const townWithUser = this._towns.filter(town => town.isPlayerInRoom(username));
+    if (townWithUser) {
+      return townWithUser[0].coveyTownID;
+    }
+    return 'user_not_online';
+  }
+
 }

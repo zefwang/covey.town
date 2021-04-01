@@ -153,4 +153,9 @@ export default class CoveyTownController {
   disconnectAllPlayers(): void {
     this._listeners.forEach((listener) => listener.onTownDestroyed());
   }
+
+  isPlayerInRoom(username: string): boolean {
+    const user = this.players.find(player => player.userName === username);
+    return user !== undefined;
+  }
 }

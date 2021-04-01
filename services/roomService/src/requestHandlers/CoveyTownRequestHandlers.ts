@@ -4,7 +4,7 @@ import Player from '../types/Player';
 import { CoveyTownList, UserLocation } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
 import CoveyTownsStore from '../lib/CoveyTownsStore';
-import DatabaseController, { AccountCreateResponse, LoginResponse, NeighborStatus, ListUsersResponse, UserWithRelationship, UsersList } from '../database/db';
+import DatabaseController, { AccountCreateResponse, LoginResponse, NeighborStatus, ListUsersResponse, UserWithRelationship, UsersList, NeighborMappingSchema, UsersListWithOnline } from '../database/db';
 
 /**
  * The format of a request to join a Town in Covey.Town, as dispatched by the server middleware
@@ -380,16 +380,28 @@ export async function acceptRequestHandler(requestData: AcceptNeighborRequestReq
   }
 }
 
-  export async function listNeighbors(currentUserId: string) : Promise<ResponseEnvelope<ListUsersResponse<UsersList>>> {
+  export async function listNeighbors(currentUserId: string) : Promise<ResponseEnvelope<ListUsersResponse<UsersListWithOnline>>> {
     try {
       const db = new DatabaseController();
       await db.connect();
       const neighborsList = await db.listNeighbors(currentUserId);
 
+      const store = CoveyTownsStore.getInstance();
+
+      const neighborsListWithOnline = neighborsList.users.map<UsersListWithOnline>((neighbor: UsersList) => {
+        const coveyTownID = store.checkIfUserOnline(neighbor.username);
+        if (coveyTownID !== 'user_not_online') {
+          return { _id: neighbor._id, username: neighbor.username, isOnline: false  };
+        }
+        return { _id: neighbor._id, username: neighbor.username, isOnline:  true, coveyTownID: coveyTownID };
+      });
+
     db.close();
     return {
       isOK: true,
-      response: neighborsList,
+      response: {
+        users: neighborsListWithOnline,
+      },
     }
 
   } catch (err) {

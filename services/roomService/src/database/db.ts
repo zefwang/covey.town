@@ -23,6 +23,13 @@ export interface UsersList {
   username: string,
 }
 
+export interface UsersListWithOnline {
+  _id: string,
+  username: string,
+  isOnline: boolean,
+  coveyTownID?: string,
+}
+
 export interface ListUsersResponse<T> {
   users: T[]
 }
