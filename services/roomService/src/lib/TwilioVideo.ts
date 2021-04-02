@@ -43,8 +43,6 @@ export default class TwilioVideo implements IVideoClient {
         process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_API_AUTH_TOKEN,
         process.env.TWILIO_API_KEY_SID, process.env.TWILIO_API_KEY_SECRET,
       );
-
-
     }
     return TwilioVideo._instance;
   }
