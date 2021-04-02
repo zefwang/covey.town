@@ -3,6 +3,8 @@ import { AccountCreateRequest, LoginRequest, SearchUsersRequest,
     searchUsersByUsername, sendAddNeighborRequest, ResponseEnvelope, AcceptNeighborRequestRequest, acceptRequestHandler, RemoveNeighborRequestRequest, removeNeighborRequestHandler, RemoveNeighborMappingRequest, removeNeighborMappingHandler,
     listNeighbors, listRequestsReceived, listRequestsSent, } from './CoveyTownRequestHandlers';
 import DatabaseController, {AccountCreateResponse, LoginResponse, NeighborStatus, ListUsersResponse, UserWithRelationship, UsersList } from '../database/db';
+import CoveyTownsStore from '../lib/CoveyTownsStore';
+import Player from '../types/Player';
 
 
 let db: DatabaseController;
@@ -809,6 +811,38 @@ describe('CoveyTownRequestHandlers', () => {
             } else {
                 throw new Error('this failed when it should have passed');
             }
+        });
+        it('shows neighbors who are online are online with covey town id and those who are not online have isOnline false', async () => {
+            const store = CoveyTownsStore.getInstance();
+            const player = new Player('testNeighborList1');
+            const controller = store.createTown('test1', true);
+            await controller.addPlayer(player);
+
+            const userId = '6063ac3c7a797cb3923c3197';
+            const neighborList = await listNeighbors(userId);
+            if (neighborList.isOK && neighborList.response) {
+                const neighbors = neighborList.response.users;
+                expect(neighbors[0].isOnline).toBeTruthy();
+                expect(neighbors[0]._id.toString()).toEqual('6063abfc7a797cb3923c3195');
+                expect(neighbors[1].isOnline).toBeFalsy();
+                expect(neighbors[1]._id.toString()).toEqual('60664539a3099d8b03672095');
+
+                const deleteStore = store.deleteTown(controller.coveyTownID, controller.townUpdatePassword);
+                if (deleteStore) {
+                    const neighborList2 = await listNeighbors(userId);
+                    if (neighborList2.isOK && neighborList2.response) {
+                        const neighbors2 = neighborList2.response.users;
+                        expect(neighbors2[0].isOnline).toBeFalsy();
+                        expect(neighbors2[0]._id.toString()).toEqual('6063abfc7a797cb3923c3195');
+                        expect(neighbors2[1].isOnline).toBeFalsy();
+                        expect(neighbors2[1]._id.toString()).toEqual('60664539a3099d8b03672095');
+                    }
+
+                }
+            } else {
+                throw new Error('this failed when it should have passed');
+            }
+
         });
 
         it('returns id and username for each request sent', async () => {
