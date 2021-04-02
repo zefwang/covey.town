@@ -44,10 +44,7 @@ export default class TwilioVideo implements IVideoClient {
         process.env.TWILIO_API_KEY_SID, process.env.TWILIO_API_KEY_SECRET,
       );
 
-      // TwilioVideo._instance = new TwilioVideo(
-      //   process.env.TWILIO_ACCOUNT_SID || 'AC207d197385cb5d7c91e98d5a7184169e', process.env.TWILIO_API_AUTH_TOKEN || '4585b6ee5b3471919c13007de13f5fbd',
-      //   process.env.TWILIO_API_KEY_SID ||  'SK9e997e30a5f11f973d3ec7bf7e0d5a0d', process.env.TWILIO_API_KEY_SECRET || 'k0Lts6tU5wLX2zSWyENq4dhOIx20heiI',
-      // );
+
     }
     return TwilioVideo._instance;
   }
