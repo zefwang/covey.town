@@ -27,9 +27,9 @@ import {
   CoveyTownInfo,
   TownJoinResponse,
   SearchUsersResponse,
-  NeighborStatus
 } from '../../classes/TownsServiceClient';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
+import { NeighborStatus } from '../../../../services/roomService/src/database/db';
 
 interface TownSelectionProps {
   doLogin: (iniData: TownJoinResponse) => Promise<boolean>
@@ -223,13 +223,14 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
     - neighbor => remove neighbor
      */
     let newStatus: NeighborStatus;
-    if (user.relationship === "unknown") { // Send friend request
+    console.log(user);
+    if (user.relationship.status === "unknown") { // Send friend request
       const addNeighborRes = await apiClient.sendAddNeighborRequest({
         currentUserId: loginResponse._id,
         UserIdToRequest: user._id
       });
       newStatus = isNeighborStatus(addNeighborRes.status) ? addNeighborRes.status as NeighborStatus : user.relationship;
-    } else if (user.relationship === 'requestReceived') {
+    } else if (user.relationship.status === 'requestReceived') {
       if (isRejectRequest) {
         newStatus = await apiClient.removeNeighborRequestHandler({
           currentUser: loginResponse._id,
@@ -241,12 +242,12 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
           userSent: user._id
         })
       }
-    } else if (user.relationship === 'requestSent') {
+    } else if (user.relationship.status === 'requestSent') {
       newStatus = await apiClient.removeNeighborRequestHandler({
         currentUser: loginResponse._id,
         requestedUser: user._id
       })
-    } else if (user.relationship === 'neighbor') {
+    } else if (user.relationship.status === 'neighbor') {
       newStatus = await apiClient.removeNeighborMappingHandler({
         currentUser: loginResponse._id,
         neighbor: user._id
@@ -259,14 +260,17 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
 
   const labelNeighborStatus = (relationship: NeighborStatus, isRejectRequest: boolean): string => {
     let label: string;
-    if (relationship === "unknown") {
+
+    if (relationship.status === "unknown") {
       label = 'Send Neighbor Request';
-    } else if (relationship === 'requestSent') {
+    } else if (relationship.status === 'requestSent') {
       label = 'Remove Neighbor Request';
-    } else if (relationship === 'requestReceived') {
+    } else if (relationship.status === 'requestReceived') {
       label = isRejectRequest ? 'Deny Neighbor Request' : 'Accept Neighbor Request';
-    } else { // if (relationship === 'neighbor')
-      label = 'Remove as Neighbor'
+    } else if (relationship.status === 'neighbor') {
+      label = 'Remove as Neighbor';
+    } else {
+      label = 'Unknown';
     }
     // Have to do this stupid way because of ESLint "unnecessary else after return'
     return label;
@@ -325,11 +329,10 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
                 {searchOutput.users.map((user) =>
                   <Box display='flex' justifyContent='space-between' p='1' key={user._id} borderWidth='1px' alignItems='center'>
                     <Text>{user.username}</Text>
-                    <Button handleClick={() => handleFriendRequestClick(user, false)}>{ labelNeighborStatus(user.relationship, false) }</Button>
+                    <Button onClick={() => handleFriendRequestClick(user, false)}>{ labelNeighborStatus(user.relationship, false) }</Button>
                     {
-                      user.relationship === 'requestReceived' &&
-                      <Button handleClick={() => handleFriendRequestClick(user, true)}>{ labelNeighborStatus(user.relationship, true) }</Button>
-
+                      user.relationship.status === 'requestReceived' &&
+                      <Button onClick={() => handleFriendRequestClick(user, true)}>{ labelNeighborStatus(user.relationship, true) }</Button>
                     }
                   </Box>
                 )}

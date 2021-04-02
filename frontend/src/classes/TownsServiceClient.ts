@@ -5,6 +5,7 @@ import {
   AcceptNeighborRequestRequest, RemoveNeighborMappingRequest,
   RemoveNeighborRequestRequest
 } from '../../../services/roomService/src/requestHandlers/CoveyTownRequestHandlers';
+import { NeighborStatus } from '../../../services/roomService/src/database/db';
 
 /**
  * The format of a request to join a Town in Covey.Town, as dispatched by the server middleware
@@ -130,8 +131,6 @@ export interface SearchUsersResponse {
   }[]
 }
 
-export type NeighborStatus = 'unknown' | 'requestSent' | 'requestReceived' | 'neighbor';
-
 export interface AddNeighborRequest {
   currentUserId: string,
   UserIdToRequest: string,
@@ -203,7 +202,7 @@ export default class TownsServiceClient {
   }
 
   async searchForUsersByUsername(requestData: SearchUsersRequest): Promise<SearchUsersResponse> {
-    const responseWrapper = await this._axios.get<ResponseEnvelope<SearchUsersResponse>>(`/users/${requestData.username}`);
+    const responseWrapper = await this._axios.get<ResponseEnvelope<SearchUsersResponse>>(`/users/${requestData.userIdSearching}/${requestData.username}`);
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 
