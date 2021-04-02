@@ -214,26 +214,28 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
 
   const handleFriendRequestClick = async (user: {_id: string, relationship: NeighborStatus, username: string}) => {
     if (user.relationship === "unknown") { // Send friend request
-      const addNeighborResponse = await apiClient.sendAddNeighborRequest({
+      await apiClient.sendAddNeighborRequest({
         currentUserId: loginResponse._id,
         UserIdToRequest: user._id
-      })
-      user.relationship = 'requestSent';
+      });
     } else if (user.relationship === 'requestReceived') {
       // React to request
     }
   }
 
   const labelNeighborStatus = (relationship: NeighborStatus) => {
+    let label: string;
     if (relationship === "unknown") {
-      return 'Add Friend';
+      label = 'Add Friend';
     } else if (relationship === 'requestSent') {
-      return 'Request Sent';
+      label = 'Request Sent';
     } else if (relationship === 'requestReceived') {
-      return 'Reply to Request'
-    } else if (relationship === 'neighbor') {
-      return 'Neighbors'
+      label = 'Reply to Request'
+    } else { // if (relationship === 'neighbor')
+      label = 'Neighbors'
     }
+    // Have to do this stupid way because of ESLint "unnecessary else after return'
+    return label;
   }
 
   return (
