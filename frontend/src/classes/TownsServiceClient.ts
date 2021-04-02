@@ -1,6 +1,10 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import assert from 'assert';
 import { ServerPlayer } from './Player';
+import {
+  AcceptNeighborRequestRequest, RemoveNeighborMappingRequest,
+  RemoveNeighborRequestRequest
+} from '../../../services/roomService/src/requestHandlers/CoveyTownRequestHandlers';
 
 /**
  * The format of a request to join a Town in Covey.Town, as dispatched by the server middleware
@@ -208,4 +212,18 @@ export default class TownsServiceClient {
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 
+  async acceptRequestHandler(requestData: AcceptNeighborRequestRequest): Promise<NeighborStatus> {
+    const responseWrapper = await this._axios.post<ResponseEnvelope<NeighborStatus>>(`/users/accept_neighbor_request`, requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async removeNeighborRequestHandler(requestData: RemoveNeighborRequestRequest): Promise<NeighborStatus> {
+    const responseWrapper = await this._axios.post<ResponseEnvelope<NeighborStatus>>(`/users/remove_neighbor_request`, requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async removeNeighborMappingHandler(requestData: RemoveNeighborMappingRequest): Promise<NeighborStatus> {
+    const responseWrapper = await this._axios.post<ResponseEnvelope<NeighborStatus>>(`/users/remove_neighbor_mapping`, requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
 }
