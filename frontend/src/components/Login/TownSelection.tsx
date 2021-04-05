@@ -22,8 +22,9 @@ import {
 } from '@chakra-ui/react';
 import useVideoContext from '../VideoCall/VideoFrontend/hooks/useVideoContext/useVideoContext';
 import Video from '../../classes/Video/Video';
-import { LoginResponse,CoveyTownInfo, TownJoinResponse} from '../../classes/TownsServiceClient';
+import { LoginResponse, CoveyTownInfo, TownJoinResponse, AUser } from '../../classes/TownsServiceClient';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
+import { NeighborStatus } from '../../../../services/roomService/src/database/db';
 
 interface TownSelectionProps {
   doLogin: (iniData: TownJoinResponse) => Promise<boolean>
@@ -38,6 +39,8 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
   });
   const [showPassword, setShowPassword] = useState<boolean>(true);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [searchInput, setSearchInput] = useState<string>('');
+  const [searchOutput, setSearchOutput] = useState<AUser[]>([]);
   const [newTownName, setNewTownName] = useState<string>('');
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
@@ -51,10 +54,11 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
     setInputUserName('')
     setLoginResponse(response);
     setIsLoggedIn(true);
+    setSearchOutput([])
+    setSearchInput('')
   }
 
   const doSignUp = async () => {
-    // API client should have sign-up route
     try {
       const response = await apiClient.createAccount({
         username: inputUserName,
@@ -186,6 +190,88 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
     }
   };
 
+  const handleSearchInput = (event: React.SyntheticEvent) => {
+    setSearchInput((event.target as HTMLInputElement).value);
+  }
+
+  const handleSearchClick = async () => {
+    const searchResults = await apiClient.searchForUsersByUsername({
+      username: searchInput,
+      userIdSearching: loginResponse._id
+    })
+    const filteredResults = searchResults.users.filter((user: AUser) => user._id !== loginResponse._id)
+    setSearchOutput(filteredResults);
+  }
+
+  const handleSearchEnter = async (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      await handleSearchClick()
+    }
+  }
+
+  const isNeighborStatus = (status: NeighborStatus | string): boolean =>
+    status === 'unknown' || status === 'requestReceived' || status === 'requestSent' || status === 'neighbor';
+
+  const handleFriendRequestClick = async (user: AUser, isRejectRequest: boolean): Promise<NeighborStatus> => {
+    /*
+    - unknown => send request
+    - requestReceived => accept/deny request
+    - requestSent => cancel request
+    - neighbor => remove neighbor
+     */
+    let newStatus: NeighborStatus;
+    if (user.relationship.status === "unknown") { // Send friend request
+      const addNeighborRes = await apiClient.sendAddNeighborRequest({
+        currentUserId: loginResponse._id,
+        UserIdToRequest: user._id
+      });
+      newStatus = isNeighborStatus(addNeighborRes.status) ? addNeighborRes.status as NeighborStatus : user.relationship;
+    } else if (user.relationship.status === 'requestReceived') {
+      if (isRejectRequest) {
+        newStatus = await apiClient.removeNeighborRequestHandler({
+          currentUser: loginResponse._id,
+          requestedUser: user._id
+        })
+      } else {
+        newStatus = await apiClient.acceptRequestHandler({
+          userAccepting: loginResponse._id,
+          userSent: user._id
+        })
+      }
+    } else if (user.relationship.status === 'requestSent') {
+      newStatus = await apiClient.removeNeighborRequestHandler({
+        currentUser: loginResponse._id,
+        requestedUser: user._id
+      })
+    } else if (user.relationship.status === 'neighbor') {
+      newStatus = await apiClient.removeNeighborMappingHandler({
+        currentUser: loginResponse._id,
+        neighbor: user._id
+      })
+    } else {
+      newStatus = user.relationship;
+    }
+    return newStatus;
+  }
+
+  const labelNeighborStatus = (relationship: NeighborStatus, isRejectRequest: boolean): string => {
+    let label: string;
+
+    if (relationship.status === "unknown") {
+      label = 'Send Neighbor Request';
+    } else if (relationship.status === 'requestSent') {
+      label = 'Remove Neighbor Request';
+    } else if (relationship.status === 'requestReceived') {
+      label = isRejectRequest ? 'Deny Neighbor Request' : 'Accept Neighbor Request';
+    } else if (relationship.status === 'neighbor') {
+      label = 'Remove as Neighbor';
+    } else {
+      label = 'Unknown';
+    }
+    // Have to do this stupid way because of ESLint "unnecessary else after return'
+    return label;
+  }
+
   return (
     <>
       <form>
@@ -225,6 +311,30 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
               </Box>
             }
           </Box>
+          { isLoggedIn &&
+            <Box borderWidth="1px" borderRadius="lg">
+              <Heading p='4' as='h2' size='lg'>Search for Neighbors</Heading>
+              <Box p='2' display='flex'>
+                <Input onKeyPress={handleSearchEnter} value={searchInput} onChange={handleSearchInput} placeholder='Search for a neighbor by username'/>
+                <Button ml='2' onClick={handleSearchClick}>
+                  Click to Search
+                </Button>
+              </Box>
+              <Box p='4'>
+                <Heading as='h3' size='sm'>Search Results</Heading>
+                {searchOutput.map((user: AUser) =>
+                  <Box display='flex' justifyContent='space-between' p='1' key={user._id} borderWidth='1px' alignItems='center'>
+                    <Text>{user.username}</Text>
+                    <Button onClick={() => handleFriendRequestClick(user, false)}>{ labelNeighborStatus(user.relationship, false) }</Button>
+                    {
+                      user.relationship.status === 'requestReceived' &&
+                      <Button onClick={() => handleFriendRequestClick(user, true)}>{ labelNeighborStatus(user.relationship, true) }</Button>
+                    }
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          }
           <Box borderWidth="1px" borderRadius="lg">
             <Heading p="4" as="h2" size="lg">Create a New Town</Heading>
             <Flex p="4">

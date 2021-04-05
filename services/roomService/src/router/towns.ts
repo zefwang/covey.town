@@ -192,9 +192,12 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
   /*
    * Remove neighbor request
    */
-  app.delete('/users/remove_neighbor_request', BodyParser.json(), async (req, res) => {
+  app.delete('/users/remove_neighbor_request/:currentUser/:requestedUser', BodyParser.json(), async (req, res) => {
     try {
-      const result = await removeNeighborRequestHandler(req.body);
+      const result = await removeNeighborRequestHandler({
+        currentUser: req.params.currentUser,
+        requestedUser: req.params.requestedUser,
+      });
       res.status(StatusCodes.OK).json(result);
     } catch (err) {
       logError(err);
@@ -207,9 +210,12 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
   /*
   * Remove neighbor mapping
   */
-  app.delete('/users/remove_neighbor_mapping', BodyParser.json(), async (req, res) => {
+  app.delete('/users/remove_neighbor_mapping/:currentUser/:neighbor', BodyParser.json(), async (req, res) => {
     try {
-      const result = await removeNeighborMappingHandler(req.body);
+      const result = await removeNeighborMappingHandler({
+        currentUser: req.params.currentUser,
+        neighbor: req.params.neighbor,
+      });
       res.status(StatusCodes.OK).json(result);
     } catch (err) {
       logError(err);

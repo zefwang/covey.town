@@ -1,6 +1,14 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import assert from 'assert';
 import { ServerPlayer } from './Player';
+import { NeighborStatus } from '../../../services/roomService/src/database/db';
+import {
+  AcceptNeighborRequestRequest, RemoveNeighborMappingRequest,
+  RemoveNeighborRequestRequest
+} from '../../../services/roomService/src/requestHandlers/CoveyTownRequestHandlers';
+
+// Represents a user
+export type AUser = {_id: string, relationship: NeighborStatus, username: string}
 
 /**
  * The format of a request to join a Town in Covey.Town, as dispatched by the server middleware
@@ -119,13 +127,8 @@ export interface SearchUsersRequest {
 }
 
 export interface SearchUsersResponse {
-  users: {
-    _id: string,
-    username: string,
-  }[]
+  users: AUser[]
 }
-
-export type NeighborStatus = 'unknown' | 'requestSent' | 'requestReceived' | 'neighbor';
 
 export interface AddNeighborRequest {
   currentUserId: string,
@@ -198,12 +201,27 @@ export default class TownsServiceClient {
   }
 
   async searchForUsersByUsername(requestData: SearchUsersRequest): Promise<SearchUsersResponse> {
-    const responseWrapper = await this._axios.get<ResponseEnvelope<SearchUsersResponse>>(`/users/${requestData.username}`);
+    const responseWrapper = await this._axios.get<ResponseEnvelope<SearchUsersResponse>>(`/users/${requestData.userIdSearching}/${requestData.username}`);
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 
   async sendAddNeighborRequest(requestData: AddNeighborRequest): Promise<AddNeighborResponse> {
     const responseWrapper = await this._axios.post<ResponseEnvelope<AddNeighborResponse>>(`/users/request_neighbor`, requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async acceptRequestHandler(requestData: AcceptNeighborRequestRequest): Promise<NeighborStatus> {
+    const responseWrapper = await this._axios.put<ResponseEnvelope<NeighborStatus>>(`/users/accept_neighbor_request`, requestData);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async removeNeighborRequestHandler(requestData: RemoveNeighborRequestRequest): Promise<NeighborStatus> {
+    const responseWrapper = await this._axios.delete<ResponseEnvelope<NeighborStatus>>(`/users/remove_neighbor_request/${requestData.currentUser}/${requestData.requestedUser}`);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async removeNeighborMappingHandler(requestData: RemoveNeighborMappingRequest): Promise<NeighborStatus> {
+    const responseWrapper = await this._axios.delete<ResponseEnvelope<NeighborStatus>>(`/users/remove_neighbor_mapping/${requestData.currentUser}/${requestData.neighbor}`);
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 
