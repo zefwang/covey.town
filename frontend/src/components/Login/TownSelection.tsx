@@ -26,7 +26,7 @@ import {
   LoginResponse,
   CoveyTownInfo,
   TownJoinResponse,
-  SearchUsersResponse,
+  AUser,
 } from '../../classes/TownsServiceClient';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
 import { NeighborStatus } from '../../../../services/roomService/src/database/db';
@@ -45,7 +45,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
   const [showPassword, setShowPassword] = useState<boolean>(true);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>('');
-  const [searchOutput, setSearchOutput] = useState<SearchUsersResponse>({users: []});
+  const [searchOutput, setSearchOutput] = useState<AUser[]>([]);
   const [newTownName, setNewTownName] = useState<string>('');
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
@@ -77,7 +77,6 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
         status: 'error'
       })
     }
-
   }
 
   const doAccountLogin = async () => {
@@ -203,7 +202,8 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
       username: searchInput,
       userIdSearching: loginResponse._id
     })
-    setSearchOutput(searchResults);
+    const filteredResults = searchResults.users.filter((user: AUser) => user._id !== loginResponse._id)
+    setSearchOutput(filteredResults);
   }
 
   const handleSearchEnter = async (event: React.KeyboardEvent) => {
@@ -215,7 +215,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
   const isNeighborStatus = (status: NeighborStatus | string): boolean =>
     status === 'unknown' || status === 'requestReceived' || status === 'requestSent' || status === 'neighbor';
 
-  const handleFriendRequestClick = async (user: {_id: string, relationship: NeighborStatus, username: string}, isRejectRequest: boolean): Promise<NeighborStatus> => {
+  const handleFriendRequestClick = async (user: AUser, isRejectRequest: boolean): Promise<NeighborStatus> => {
     /*
     - unknown => send request
     - requestReceived => accept/deny request
@@ -223,7 +223,6 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
     - neighbor => remove neighbor
      */
     let newStatus: NeighborStatus;
-    console.log(user);
     if (user.relationship.status === "unknown") { // Send friend request
       const addNeighborRes = await apiClient.sendAddNeighborRequest({
         currentUserId: loginResponse._id,
@@ -326,7 +325,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
               </Box>
               <Box p='4'>
                 <Heading as='h3' size='sm'>Search Results</Heading>
-                {searchOutput.users.map((user) =>
+                {searchOutput.map((user: AUser) =>
                   <Box display='flex' justifyContent='space-between' p='1' key={user._id} borderWidth='1px' alignItems='center'>
                     <Text>{user.username}</Text>
                     <Button onClick={() => handleFriendRequestClick(user, false)}>{ labelNeighborStatus(user.relationship, false) }</Button>
@@ -387,7 +386,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
                 <TableCaption placement="bottom">Publicly Listed Towns</TableCaption>
                 <Thead><Tr><Th>Room Name</Th><Th>Room ID</Th><Th>Activity</Th></Tr></Thead>
                 <Tbody>
-                  {currentPublicTowns?.map((town) => (
+                  {currentPublicTowns?.map((town: CoveyTownInfo) => (
                     <Tr key={town.coveyTownID}><Td role='cell'>{town.friendlyName}</Td><Td
                       role='cell'>{town.coveyTownID}</Td>
                       <Td role='cell'>{town.currentOccupancy}/{town.maximumOccupancy}

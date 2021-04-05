@@ -7,6 +7,10 @@ import {
 } from '../../../services/roomService/src/requestHandlers/CoveyTownRequestHandlers';
 import { NeighborStatus } from '../../../services/roomService/src/database/db';
 
+// Represents a user
+export type AUser = {_id: string, relationship: NeighborStatus, username: string}
+
+
 /**
  * The format of a request to join a Town in Covey.Town, as dispatched by the server middleware
  */
@@ -124,11 +128,7 @@ export interface SearchUsersRequest {
 }
 
 export interface SearchUsersResponse {
-  users: {
-    _id: string,
-    username: string,
-    relationship: NeighborStatus
-  }[]
+  users: AUser[]
 }
 
 export interface AddNeighborRequest {
@@ -217,12 +217,12 @@ export default class TownsServiceClient {
   }
 
   async removeNeighborRequestHandler(requestData: RemoveNeighborRequestRequest): Promise<NeighborStatus> {
-    const responseWrapper = await this._axios.post<ResponseEnvelope<NeighborStatus>>(`/users/remove_neighbor_request`, requestData);
+    const responseWrapper = await this._axios.delete<ResponseEnvelope<NeighborStatus>>(`/users/remove_neighbor_request/${requestData.currentUser}/${requestData.requestedUser}`);
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 
   async removeNeighborMappingHandler(requestData: RemoveNeighborMappingRequest): Promise<NeighborStatus> {
-    const responseWrapper = await this._axios.post<ResponseEnvelope<NeighborStatus>>(`/users/remove_neighbor_mapping`, requestData);
+    const responseWrapper = await this._axios.delete<ResponseEnvelope<NeighborStatus>>(`/users/remove_neighbor_mapping/${requestData.currentUser}/${requestData.neighbor}`);
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 }
