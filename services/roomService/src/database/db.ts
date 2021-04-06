@@ -5,24 +5,39 @@ import { mongo } from 'mongoose';
 
 dotenv.config();
 
+/**
+ * Represents a relationship between two users
+ */
 export type NeighborStatus = { status: 'unknown' | 'requestSent' | 'requestReceived' | 'neighbor' };
 
+/**
+ * Response sent back to Requests Handler after creating an account
+ */
 export interface AccountCreateResponse {
   _id: string,
   username: string,
 }
 
+/**
+ * Object format for a user data with a field for relationship to a given user
+ */
 export interface UserWithRelationship {
   _id: string,
   username: string,
   relationship: NeighborStatus,
 }
 
+/**
+ * Object format for user data within a list
+ */
 export interface UsersList {
   _id: string,
   username: string,
 }
 
+/**
+ * Object format for user data with online status
+ */
 export interface UsersListWithOnline {
   _id: string,
   username: string,
@@ -30,21 +45,42 @@ export interface UsersListWithOnline {
   coveyTownID?: string,
 }
 
+/**
+ * Response sent back to Request Handler when returning lists of users
+ */
 export interface ListUsersResponse<T> {
   users: T[]
 }
 
+/**
+ * Response sent back to Request Handler after a login attempt
+ */
 export interface LoginResponse {
   _id: string,
   username: string,
 }
 
+/**
+ * Schema for user collection in database
+ */
+export interface UserSchema {
+  _id: string,
+  username: string,
+  password: string,
+}
+
+/**
+ * Schema for neighbor_mapping collection in database
+ */
 export interface NeighborMappingSchema {
   _id: string,
   neighbor1: string, // will be user id
   neighbor2: string, // will be user id
 }
 
+/**
+ * Schema for neighbor_request collection in database
+ */
 export interface NeighborRequestSchema {
   _id: string, 
   requestTo: string, // will be user id
@@ -52,17 +88,19 @@ export interface NeighborRequestSchema {
 }
 
 export default class DatabaseController {
-    private client: MongoClient;
-    private userCollection: any;
-    private neighborRequests: any;
-    private neighborMappings: any;
+  private client: MongoClient;
+  private userCollection: any;
+  private neighborRequests: any;
+  private neighborMappings: any;
 
-    constructor() {
-        // assert(process.env.MONGO_URL, 'Must have Mongo URL to connect to database');
-        assert(process.env.MONGO_URL);
-        this.client = new MongoClient(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true });
-    }
+  constructor() {
+    assert(process.env.MONGO_URL, 'Must have Mongo URL to connect to database');
+    this.client = new MongoClient(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true });
+  }
 
+  /**
+   * Opens the connection to the database
+   */
   async connect(): Promise<void> {
     await this.client.connect();
     this.userCollection = this.client.db('coveytown').collection('user');
@@ -70,24 +108,27 @@ export default class DatabaseController {
     this.neighborMappings = this.client.db('coveytown').collection('neighbor_mappings');
   }
 
-    close() {
-        this.client.close();
-    }
+  /**
+   * Closes the connection to the database
+   */
+  close() {
+      this.client.close();
+  }
 
-    /**
-     * Returns an object with access to a collection in the coveytown db.
-     * @param collection name of the collection to open
-     * @returns
-     */
+  /**
+   * Returns an object with access to a collection in the coveytown db.
+   * @param collection name of the collection to open
+   * @returns
+   */
   private getCollection(collection: string) {
     return this.client.db('coveytown').collection(collection);
   }
 
   /**
-     * Works to remove a user from the user collection in the coveytown db
-     * @param userID name of the collection to remove user from
-     * @returns a string with the deletion status
-     */
+   * Works to remove a user from the user collection in the coveytown db
+   * @param userID name of the collection to remove user from
+   * @returns a string with the deletion status
+   */
   async removeUserFromCollection(userID: string): Promise<string> {
     try {
       const deleteUser = new mongo.ObjectId(userID);
@@ -99,11 +140,11 @@ export default class DatabaseController {
   }
 
   /**
-     * Works to remove a request from the neighbor_request collection in the coveytown db
-     * @param requestFrom name of the user sending the request to be removed
-     * @param requestTo name of the user receiving the request to be removed
-     * @returns a string with the deletion status
-     */
+   * Works to remove a request from the neighbor_request collection in the coveytown db
+   * @param requestFrom name of the user sending the request to be removed
+   * @param requestTo name of the user receiving the request to be removed
+   * @returns a string with the deletion status
+   */
   async removeRequestFromCollection(requestFrom: string, requestTo: string): Promise<string> {
     try {
       await this.neighborRequests.deleteOne({'requestFrom': requestFrom, 'requestTo': requestTo});
@@ -114,11 +155,11 @@ export default class DatabaseController {
   }
 
   /**
-     * Works to remove a mapping from the neighbor_mappings collection in the coveytown db
-     * @param neighbor1 name of the user whose friend request was accepted
-     * @param neighbor2 name of the user who accepted the friend request
-     * @returns a string with the deletion status
-     */
+   * Works to remove a mapping from the neighbor_mappings collection in the coveytown db
+   * @param neighbor1 name of the user whose friend request was accepted
+   * @param neighbor2 name of the user who accepted the friend request
+   * @returns a string with the deletion status
+   */
    async removeMappingFromCollection(neighbor1: string, neighbor2: string): Promise<string> {
     try {
       await this.neighborMappings.deleteOne({'neighbor1': neighbor1, 'neighbor2': neighbor2});
@@ -129,11 +170,11 @@ export default class DatabaseController {
   }
 
   /**
-     * Creates an account using the passed username and password.
-     * @param username the username of the new user
-     * @param password the password of the new user
-     * @returns a ResponseEnvelope with an AccountCreateResponse
-     */
+   * Creates an account using the passed username and password.
+   * @param username the username of the new user
+   * @param password the password of the new user
+   * @returns a ResponseEnvelope with an AccountCreateResponse
+   */
   async insertUser(username: string, password: string) : Promise<AccountCreateResponse> {
     try {
       const accountCreateResponse = await this.userCollection.insertOne({'username':username, 'password':password});
@@ -149,14 +190,13 @@ export default class DatabaseController {
   }
 
   /**
-     * Attempt to log in with this username and password
-     * @param username the username of the returning user
-     * @param password the password of the returning user
-     * @returns a ResponseEnvelope with a LoginResponse
-     */
+   * Attempt to log in with this username and password
+   * @param username the username of the returning user
+   * @param password the password of the returning user
+   * @returns a ResponseEnvelope with a LoginResponse
+   */
   async login(username: string, password: string) : Promise<LoginResponse | string> {
     try {
-
       const findUser = await this.userCollection.find({'username': username, 'password': password}).limit(1).toArray();
 
       if (findUser.length === 0) {
@@ -170,64 +210,56 @@ export default class DatabaseController {
     } catch (err) {
       return err.toString();
     }
-}
-
-    async searchUsersByUsername(currentUserId: string, username: string) : Promise<ListUsersResponse<UserWithRelationship>> {
-
-      //need to also take in username of player searching to get neighborStatus
-      try {
-          const userId = await this.findUserIdByUsername(username) as string;
-          const status = await this.neighborStatus(currentUserId, userId);
-          if (userId !== 'user_not_found') {
-              return {
-                  users: [{
-                      _id: userId,
-                      username,
-                      relationship: status,
-                  }]
-              }
-          }
-
-          // else do partial match search
-
-          const searchPartialMatch = await this.userCollection.find({'username': {'$regex': `^${username}`, '$options': 'i'}}).project({'username': 1}).toArray();
-
-          const matchesWithStatus = await Promise.all<UserWithRelationship>(searchPartialMatch.map(async (match: any) => {
-            assert(match._id);
-            assert(match.username);
-            const status: NeighborStatus = await this.neighborStatus(currentUserId, match._id.toString());
-            assert(status.status);
-            return {_id: match._id, username: match.username, relationship: status};
-          }));
-
-          // // get neighbor status for each user returned
-          // //return {id, username, neighborStatus}
-          // // do same thing for listing requests sent and requests received
-
-          return {
-            users: matchesWithStatus,
-          }
-      } catch (err) {
-          return err.toString();
-      }
   }
-  
+
+  async searchUsersByUsername(currentUserId: string, username: string) : Promise<ListUsersResponse<UserWithRelationship>> {
+    try {
+      const userId = await this.findUserIdByUsername(username) as string;
+      const status = await this.neighborStatus(currentUserId, userId);
+      if (userId !== 'user_not_found') {
+          return {
+              users: [{
+                  _id: userId,
+                  username,
+                  relationship: status,
+              }]
+          }
+      }
+
+      // Else, do a partial match search
+
+      const searchPartialMatch = await this.userCollection.find({'username': {'$regex': `^${username}`, '$options': 'i'}}).project({'username': 1}).toArray();
+
+      const matchesWithStatus = await Promise.all<UserWithRelationship>(searchPartialMatch.map(async (match: any) => {
+        assert(match._id);
+        assert(match.username);
+        const status: NeighborStatus = await this.neighborStatus(currentUserId, match._id.toString());
+        assert(status.status);
+        return {_id: match._id, username: match.username, relationship: status};
+      }));
+
+      return {
+        users: matchesWithStatus,
+      }
+    } catch (err) {
+        return err.toString();
+    }
+  }
+
 
   /**
-     * Find a user's ID given their username
-     * @param username: the string username of the user to search for
-     * @returns a string containing the user's ID
-     */
+   * Find a user's ID given their username
+   * @param username: the string username of the user to search for
+   * @returns a string containing the user's ID
+   */
   async findUserIdByUsername(username: string) : Promise<string> {
     try {
-
       const findUser = await this.userCollection.find({ 'username': username }).limit(1).toArray();
       if (findUser.length === 1) {
-
         return findUser[0]._id.toString();
       }
-      return 'user_not_found';
 
+      return 'user_not_found';
     } catch (err) {
       return err.toString();
     }
@@ -240,7 +272,6 @@ export default class DatabaseController {
    */
   async findUserById(id: string) : Promise<string> {
     try {
-
       const findUser = await this.userCollection.find({ '_id': new ObjectID(id) }).limit(1).toArray();
       if (findUser.length === 1) {
         return findUser[0].username as string;
@@ -253,6 +284,11 @@ export default class DatabaseController {
   }
   
 
+  /**
+   * Validates that a given user ID belongs to an account
+   * @param userID user id to validate
+   * @returns 
+   */
   async validateUser(userID: string) : Promise<string> { 
     try {
       const findUser = await this.userCollection.find({ '_id': new ObjectID(userID)}).limit(1).toArray();
@@ -267,11 +303,11 @@ export default class DatabaseController {
   }
 
   /**
-     * Sending a neighbor request. Attempts to send a neighbor_request from requestFrom to requestTo
-     * @param requestFrom the string _id of the user sending the request
-     * @param requestTo the string _id of the player receiving a request
-     * @returns a ResponseEnvelope with a NeighborStatus
-     */
+   * Sending a neighbor request. Attempts to send a neighbor_request from requestFrom to requestTo
+   * @param requestFrom the string _id of the user sending the request
+   * @param requestTo the string _id of the player receiving a request
+   * @returns a ResponseEnvelope with a NeighborStatus
+   */
   async sendRequest(requestFrom: string, requestTo: string) : Promise<NeighborStatus> {
     try {
       // Determine if this request has already been sent
@@ -291,12 +327,12 @@ export default class DatabaseController {
   }
 
   /**
-     *  Function to determine the status of the relationship between the current user and the user being viewed
-     *
-     * @param user the string_id of current user
-     * @param otherUser the string_id of other user
-     * @returns a NeighborStatus
-     */
+   *  Function to determine the status of the relationship between the current user and the user being viewed
+   *
+   * @param user the string_id of current user
+   * @param otherUser the string_id of other user
+   * @returns a NeighborStatus
+   */
   async neighborStatus(user: string, otherUser: string): Promise<NeighborStatus> {
     try {
       const checkIfNeighbors = await this.checkIfNeighbors(user, otherUser);
@@ -399,12 +435,13 @@ export default class DatabaseController {
       }
   }
 
+
   /**
-     * Check if the two users passed are currently neighbors
-     * @param user1 the string_id of one user
-     * @param user2 the string_id of the other user
-     * @returns true if neighbors, false if not
-     */
+   * Check if the two users passed are currently neighbors
+   * @param user1 the string_id of one user
+   * @param user2 the string_id of the other user
+   * @returns true if neighbors, false if not
+   */
   async checkIfNeighbors(user1: string, user2: string): Promise<boolean | undefined> {
     try {
       // const neighborMappings = this.getCollection('neighbor_mappings');
@@ -429,11 +466,11 @@ export default class DatabaseController {
   }
 
   /**
-     * Accepts the request for the user who received one
-     * @param userAccepting the string_id of the user who received the request and is accepting it
-     * @param userSent the string_id of the user who sent the request
-     * @returns a response evnelope with the NeighborStatus of the two users
-     */
+   * Accepts the request for the user who received one
+   * @param userAccepting the string_id of the user who received the request and is accepting it
+   * @param userSent the string_id of the user who sent the request
+   * @returns a response evnelope with the NeighborStatus of the two users
+   */
   async acceptRequest(userAccepting: string, userSent: string): Promise<NeighborStatus> {
     try {
       const neighborStatus = await this.neighborStatus(userAccepting, userSent);
@@ -456,11 +493,11 @@ export default class DatabaseController {
   }
 
   /**
-     * Removes the neighbor request sent from user to requestedUser
-     * @param user the string_id of the current user
-     * @param requestedUser the string_id of the requestedUser
-     * @returns a ResponseEnvelope with a Neighbor Status
-     */
+   * Removes the neighbor request sent from user to requestedUser
+   * @param user the string_id of the current user
+   * @param requestedUser the string_id of the requestedUser
+   * @returns a ResponseEnvelope with a Neighbor Status
+   */
   async removeNeighborRequest(user: string, requestedUser: string): Promise<NeighborStatus> {
     try {
 
@@ -480,11 +517,11 @@ export default class DatabaseController {
   }
 
   /**
-     * Removes the neighbor relationship between the user and neighbor
-     * @param user the string_id of the current user
-     * @param neighbor the string_id of the neighbor to remove
-     * @returns a ResponseEnvelope with a NeighborStatus
-     */
+   * Removes the neighbor relationship between the user and neighbor
+   * @param user the string_id of the current user
+   * @param neighbor the string_id of the neighbor to remove
+   * @returns a ResponseEnvelope with a NeighborStatus
+   */
   async removeNeighbor(user: string, neighbor: string): Promise<NeighborStatus> {
     try {
       const neighborStatus = await this.neighborStatus(user, neighbor);

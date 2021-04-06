@@ -80,40 +80,64 @@ export interface TownUpdateRequest {
   isPubliclyListed?: boolean;
 }
 
+/**
+ * Payload sent by client to create an account
+ */
 export interface AccountCreateRequest {
   username: string,
   password: string,
 }
 
+/**
+ * Payload sent by client to login a user
+ */
 export interface LoginRequest {
   username: string,
   password: string,
 }
 
+/**
+ * Paylod sent by client to search for users
+ */
 export interface SearchUsersRequest {
   currentUserId: string,
   username: string,
 }
 
+/**
+ * Payload sent by client to send an Neighbor request
+ */
 export interface AddNeighborRequest {
   currentUserId: string,
   UserIdToRequest: string,
 }
 
+/**
+ * Payload sent back to client with the status after sending a NeighborRequest
+ */
 export interface AddNeighborResponse {
   status: string,
 }
 
+/**
+ * Payload sent by client to accept a Neighbor request
+ */
 export interface AcceptNeighborRequestRequest {
   userAccepting: string,
   userSent: string,
 }
 
+/**
+ * Payload sent by client to delete a Neighbor request
+ */
 export interface RemoveNeighborRequestRequest {
   currentUser: string,
   requestedUser: string,
 }
 
+/**
+ * Payload sent by client to remove a Neighbor relationship
+ */
 export interface RemoveNeighborMappingRequest {
   currentUser: string,
   neighbor: string,
