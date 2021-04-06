@@ -228,8 +228,8 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
     } else if (user.relationship.status === 'requestReceived') {
       if (isRejectRequest) {
         newStatus = await apiClient.removeNeighborRequestHandler({
-          currentUser: loginResponse._id,
-          requestedUser: user._id
+          currentUser: user._id,
+          requestedUser: loginResponse._id
         })
       } else {
         newStatus = await apiClient.acceptRequestHandler({
