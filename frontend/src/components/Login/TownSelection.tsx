@@ -22,9 +22,8 @@ import {
 } from '@chakra-ui/react';
 import useVideoContext from '../VideoCall/VideoFrontend/hooks/useVideoContext/useVideoContext';
 import Video from '../../classes/Video/Video';
-import { LoginResponse, CoveyTownInfo, TownJoinResponse, AUser } from '../../classes/TownsServiceClient';
+import { LoginResponse, CoveyTownInfo, TownJoinResponse, AUser, NeighborStatus } from '../../classes/TownsServiceClient';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
-import { NeighborStatus } from '../../../../services/roomService/src/database/db';
 
 interface TownSelectionProps {
   doLogin: (iniData: TownJoinResponse) => Promise<boolean>

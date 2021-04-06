@@ -1,15 +1,11 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import assert from 'assert';
 import { ServerPlayer } from './Player';
-import { NeighborStatus } from '../../../services/roomService/src/database/db';
-import {
-  AcceptNeighborRequestRequest, RemoveNeighborMappingRequest,
-  RemoveNeighborRequestRequest
-} from '../../../services/roomService/src/requestHandlers/CoveyTownRequestHandlers';
+
+export type NeighborStatus = { status: 'unknown' | 'requestSent' | 'requestReceived' | 'neighbor' };
 
 // Represents a user
 export type AUser = {_id: string, relationship: NeighborStatus, username: string}
-
 /**
  * The format of a request to join a Town in Covey.Town, as dispatched by the server middleware
  */
@@ -139,6 +135,21 @@ export interface AddNeighborResponse {
   status: NeighborStatus | string,
 }
 
+export interface AcceptNeighborRequestRequest {
+  userAccepting: string,
+  userSent: string,
+}
+
+export interface RemoveNeighborRequestRequest {
+  currentUser: string,
+  requestedUser: string,
+}
+
+export interface RemoveNeighborMappingRequest {
+  currentUser: string,
+  neighbor: string,
+}
+
 
 export default class TownsServiceClient {
   private _axios: AxiosInstance;
@@ -224,5 +235,4 @@ export default class TownsServiceClient {
     const responseWrapper = await this._axios.delete<ResponseEnvelope<NeighborStatus>>(`/users/remove_neighbor_mapping/${requestData.currentUser}/${requestData.neighbor}`);
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
-
 }
