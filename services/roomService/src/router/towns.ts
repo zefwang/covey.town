@@ -19,7 +19,7 @@ import {
   townUpdateHandler,
   listNeighbors,
   listRequestsReceived,
-  listRequestsSent
+  listRequestsSent,
 } from '../requestHandlers/CoveyTownRequestHandlers';
 import { logError } from '../Utils';
 
@@ -192,7 +192,7 @@ export default function addTownRoutes(http: Server, app: Express): io.Server {
   /*
    * Remove neighbor request
    */
-   app.delete('/users/remove_neighbor_request', BodyParser.json(), async (req, res) => {
+  app.delete('/users/remove_neighbor_request', BodyParser.json(), async (req, res) => {
     try {
       const result = await removeNeighborRequestHandler(req.body);
       res.status(StatusCodes.OK).json(result);

@@ -4,7 +4,7 @@ import Player from '../types/Player';
 import { CoveyTownList, UserLocation } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
 import CoveyTownsStore from '../lib/CoveyTownsStore';
-import DatabaseController, { AccountCreateResponse, LoginResponse, NeighborStatus, ListUsersResponse, UserWithRelationship, UsersList, NeighborMappingSchema, UsersListWithOnline } from '../database/db';
+import DatabaseController, { AccountCreateResponse, LoginResponse, NeighborStatus, ListUsersResponse, UserWithRelationship, UsersList, UsersListWithOnline } from '../database/db';
 
 /**
  * The format of a request to join a Town in Covey.Town, as dispatched by the server middleware
@@ -404,21 +404,21 @@ export async function acceptRequestHandler(requestData: AcceptNeighborRequestReq
   }
 }
 
-  export async function listNeighbors(currentUserId: string) : Promise<ResponseEnvelope<ListUsersResponse<UsersListWithOnline>>> {
-    try {
-      const db = new DatabaseController();
-      await db.connect();
-      const neighborsList = await db.listNeighbors(currentUserId);
+export async function listNeighbors(currentUserId: string) : Promise<ResponseEnvelope<ListUsersResponse<UsersListWithOnline>>> {
+  try {
+    const db = new DatabaseController();
+    await db.connect();
+    const neighborsList = await db.listNeighbors(currentUserId);
 
-      const store = CoveyTownsStore.getInstance();
+    const store = CoveyTownsStore.getInstance();
 
-      const neighborsListWithOnline = neighborsList.users.map<UsersListWithOnline>((neighbor: UsersList) => {
-        const coveyTownID = store.checkIfUserOnline(neighbor.username);
-        if (coveyTownID === 'user_not_online') {
-          return { _id: neighbor._id, username: neighbor.username, isOnline: false  };
-        }
-        return { _id: neighbor._id, username: neighbor.username, isOnline:  true, coveyTownID: coveyTownID };
-      });
+    const neighborsListWithOnline = neighborsList.users.map<UsersListWithOnline>((neighbor: UsersList) => {
+      const coveyTownID = store.checkIfUserOnline(neighbor.username);
+      if (coveyTownID === 'user_not_online') {
+        return { _id: neighbor._id, username: neighbor.username, isOnline: false  };
+      }
+      return { _id: neighbor._id, username: neighbor.username, isOnline:  true, coveyTownID };
+    });
 
     db.close();
     return {
@@ -426,13 +426,12 @@ export async function acceptRequestHandler(requestData: AcceptNeighborRequestReq
       response: {
         users: neighborsListWithOnline,
       },
-    }
-
+    };
   } catch (err) {
     return {
       isOK: false,
-      message: err.toString()
-    }
+      message: err.toString(),
+    };
   }
 }
 
@@ -447,13 +446,13 @@ export async function listRequestsReceived(currentUserId: string) : Promise<Resp
     return {
       isOK: true,
       response: requestsReceivedList,
-    }
+    };
 
   } catch (err) {
     return {
       isOK: false,
-      message: err.toString()
-    }
+      message: err.toString(),
+    };
   }
 }
 
@@ -468,13 +467,13 @@ export async function listRequestsSent(currentUserId: string) : Promise<Response
     return {
       isOK: true,
       response: requestsSentList,
-    }
+    };
 
   } catch (err) {
     return {
       isOK: false,
-      message: err.toString()
-    }
+      message: err.toString(),
+    };
   }
 }
 

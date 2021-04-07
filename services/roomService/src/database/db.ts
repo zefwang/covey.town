@@ -1,6 +1,6 @@
 import assert from 'assert';
 import dotenv from 'dotenv';
-import { MongoClient, ObjectID } from 'mongodb';
+import { Collection, MongoClient, ObjectID } from 'mongodb';
 import { mongo } from 'mongoose';
 
 dotenv.config();
@@ -89,9 +89,12 @@ export interface NeighborRequestSchema {
 
 export default class DatabaseController {
   private client: MongoClient;
-  private userCollection: any;
-  private neighborRequests: any;
-  private neighborMappings: any;
+
+  private userCollection!: Collection<any>;
+
+  private neighborRequests!: Collection<any>;
+
+  private neighborMappings!: Collection<any>;
 
   constructor() {
     assert(process.env.MONGO_URL, 'Must have Mongo URL to connect to database');
@@ -111,18 +114,11 @@ export default class DatabaseController {
   /**
    * Closes the connection to the database
    */
-  close() {
-      this.client.close();
+  close(): void {
+    this.client.close();
   }
 
-  /**
-   * Returns an object with access to a collection in the coveytown db.
-   * @param collection name of the collection to open
-   * @returns
-   */
-  private getCollection(collection: string) {
-    return this.client.db('coveytown').collection(collection);
-  }
+
 
   /**
    * Works to remove a user from the user collection in the coveytown db
@@ -132,7 +128,7 @@ export default class DatabaseController {
   async removeUserFromCollection(userID: string): Promise<string> {
     try {
       const deleteUser = new mongo.ObjectId(userID);
-      await this.userCollection.deleteOne({'_id': deleteUser});
+      await this.userCollection.deleteOne( { '_id': deleteUser } );
       return 'deletedUser';
     } catch (err) {
       return err.toString();
@@ -147,7 +143,7 @@ export default class DatabaseController {
    */
   async removeRequestFromCollection(requestFrom: string, requestTo: string): Promise<string> {
     try {
-      await this.neighborRequests.deleteOne({'requestFrom': requestFrom, 'requestTo': requestTo});
+      await this.neighborRequests.deleteOne( { 'requestFrom': requestFrom, 'requestTo': requestTo } );
       return 'deletedRequest';
     } catch (err) {
       return err.toString();
@@ -160,9 +156,9 @@ export default class DatabaseController {
    * @param neighbor2 name of the user who accepted the friend request
    * @returns a string with the deletion status
    */
-   async removeMappingFromCollection(neighbor1: string, neighbor2: string): Promise<string> {
+  async removeMappingFromCollection(neighbor1: string, neighbor2: string): Promise<string> {
     try {
-      await this.neighborMappings.deleteOne({'neighbor1': neighbor1, 'neighbor2': neighbor2});
+      await this.neighborMappings.deleteOne( { 'neighbor1': neighbor1, 'neighbor2': neighbor2 } );
       return 'deletedRequest';
     } catch (err) {
       return err.toString();
@@ -177,7 +173,7 @@ export default class DatabaseController {
    */
   async insertUser(username: string, password: string) : Promise<AccountCreateResponse> {
     try {
-      const accountCreateResponse = await this.userCollection.insertOne({'username':username, 'password':password});
+      const accountCreateResponse = await this.userCollection.insertOne( { 'username':username, 'password':password } );
 
       return  {
         _id: String(accountCreateResponse.ops[0]._id),
@@ -197,7 +193,7 @@ export default class DatabaseController {
    */
   async login(username: string, password: string) : Promise<LoginResponse | string> {
     try {
-      const findUser = await this.userCollection.find({'username': username, 'password': password}).limit(1).toArray();
+      const findUser = await this.userCollection.find( { 'username': username, 'password': password } ).limit(1).toArray();
 
       if (findUser.length === 0) {
         return 'Invalid Username and Password';
@@ -217,32 +213,36 @@ export default class DatabaseController {
       const userId = await this.findUserIdByUsername(username) as string;
       const status = await this.neighborStatus(currentUserId, userId);
       if (userId !== 'user_not_found') {
-          return {
-              users: [{
-                  _id: userId,
-                  username,
-                  relationship: status,
-              }]
-          }
+        return {
+          users: [{
+            _id: userId,
+            username,
+            relationship: status,
+          }],
+        };
       }
 
       // Else, do a partial match search
 
-      const searchPartialMatch = await this.userCollection.find({'username': {'$regex': `^${username}`, '$options': 'i'}}).project({'username': 1}).toArray();
+      const searchPartialMatch = await this.userCollection.find( { 'username': { '$regex': `^${username}`, '$options': 'i' } } ).project( { 'username': 1 } ).toArray();
 
-      const matchesWithStatus = await Promise.all<UserWithRelationship>(searchPartialMatch.map(async (match: any) => {
+      const matchesWithStatus = await Promise.all<UserWithRelationship>(searchPartialMatch.map(async (match: UserSchema) => {
         assert(match._id);
         assert(match.username);
-        const status: NeighborStatus = await this.neighborStatus(currentUserId, match._id.toString());
-        assert(status.status);
-        return {_id: match._id, username: match.username, relationship: status};
+        const partialMatchStatus: NeighborStatus = await this.neighborStatus(currentUserId, match._id.toString());
+        assert(partialMatchStatus.status);
+        return { 
+          _id: match._id, 
+          username: match.username, 
+          relationship: partialMatchStatus,
+        };
       }));
 
       return {
         users: matchesWithStatus,
-      }
+      };
     } catch (err) {
-        return err.toString();
+      return err.toString();
     }
   }
 
@@ -254,7 +254,7 @@ export default class DatabaseController {
    */
   async findUserIdByUsername(username: string) : Promise<string> {
     try {
-      const findUser = await this.userCollection.find({ 'username': username }).limit(1).toArray();
+      const findUser = await this.userCollection.find( { 'username': username } ).limit(1).toArray();
       if (findUser.length === 1) {
         return findUser[0]._id.toString();
       }
@@ -272,7 +272,7 @@ export default class DatabaseController {
    */
   async findUserById(id: string) : Promise<string> {
     try {
-      const findUser = await this.userCollection.find({ '_id': new ObjectID(id) }).limit(1).toArray();
+      const findUser = await this.userCollection.find( { '_id': new ObjectID(id) } ).limit(1).toArray();
       if (findUser.length === 1) {
         return findUser[0].username as string;
       }
@@ -291,7 +291,7 @@ export default class DatabaseController {
    */
   async validateUser(userID: string) : Promise<string> { 
     try {
-      const findUser = await this.userCollection.find({ '_id': new ObjectID(userID)}).limit(1).toArray();
+      const findUser = await this.userCollection.find( { '_id': new ObjectID(userID) } ).limit(1).toArray();
       if (findUser.length === 1) {
         return 'existing user';
       }
@@ -317,7 +317,7 @@ export default class DatabaseController {
         return neighborStatus;
       }
 
-      await this.neighborRequests.insertOne({'requestFrom': requestFrom, 'requestTo': requestTo});
+      await this.neighborRequests.insertOne( { 'requestFrom': requestFrom, 'requestTo': requestTo } );
 
       return { status: 'requestSent' };
 
@@ -340,12 +340,12 @@ export default class DatabaseController {
         return { status: 'neighbor' };
       }
 
-      const requestSent = await this.neighborRequests.find({requestFrom: user, requestTo: otherUser}).toArray();
+      const requestSent = await this.neighborRequests.find( { requestFrom: user, requestTo: otherUser } ).toArray();
       if (requestSent.length === 1) {
-        return { status: 'requestSent'};
+        return { status: 'requestSent' };
       }
 
-      const requestReceived = await this.neighborRequests.find({requestFrom: otherUser, requestTo: user}).limit(1).toArray();
+      const requestReceived = await this.neighborRequests.find( { requestFrom: otherUser, requestTo: user } ).limit(1).toArray();
       if (requestReceived.length === 1) {
         return { status: 'requestReceived' };
       }
@@ -365,19 +365,22 @@ export default class DatabaseController {
    */
   async listRequestsReceived(currentUserId: string): Promise<ListUsersResponse<UsersList>> {
     try {
-        const requestReceived = await this.neighborRequests.find({'requestTo': currentUserId}).toArray();
+      const requestReceived = await this.neighborRequests.find( { 'requestTo': currentUserId } ).toArray();
 
-        const listUsers = await Promise.all<UsersList>(requestReceived.map(async (requester: NeighborRequestSchema) => {
-          const username = await this.findUserById(requester.requestFrom);
-          return { _id: requester.requestFrom, username };
-        }));
+      const listUsers = await Promise.all<UsersList>(requestReceived.map(async (requester: NeighborRequestSchema) => {
+        const username = await this.findUserById(requester.requestFrom);
+        return { 
+          _id: requester.requestFrom, 
+          username,
+        };
+      }));
 
-        return {
-          users: listUsers
-        }
+      return {
+        users: listUsers,
+      };
 
     } catch (err) {
-        return err.toString();
+      return err.toString();
     }
   } 
 
@@ -387,21 +390,24 @@ export default class DatabaseController {
    * @returns a ResponseEnvelope with an Array listing user string_id's and NeighborStatus
    */
   async listRequestsSent(currentUserId: string): Promise<ListUsersResponse<UsersList>> {
-      try {
-        const requestSent = await this.neighborRequests.find({'requestFrom': currentUserId}).toArray();
+    try {
+      const requestSent = await this.neighborRequests.find( { 'requestFrom': currentUserId } ).toArray();
 
-        const listUsers = await Promise.all<UsersList>(requestSent.map(async (requestee: NeighborRequestSchema) => {
-          const username = await this.findUserById(requestee.requestTo);
-          return { _id: requestee.requestTo, username };
-        }));
+      const listUsers = await Promise.all<UsersList>(requestSent.map(async (requestee: NeighborRequestSchema) => {
+        const username = await this.findUserById(requestee.requestTo);
+        return { 
+          _id: requestee.requestTo,
+          username,
+        };
+      }));
 
-        return {
-          users: listUsers
-        }
+      return {
+        users: listUsers,
+      };
 
-      } catch (err) {
-        return err.toString();
-      }
+    } catch (err) {
+      return err.toString();
+    }
   }
 
   /**
@@ -410,29 +416,35 @@ export default class DatabaseController {
    * @returns a ResponseEnvelope with an Array listing user string_id's and NeighborStatus
    */
   async listNeighbors(currentUserId: string): Promise<ListUsersResponse<UsersList>> {
-      try {
-          const neighborsList1 = await this.neighborMappings.find({'neighbor1': currentUserId}).toArray();
+    try {
+      const neighborsList1 = await this.neighborMappings.find( { 'neighbor1': currentUserId } ).toArray();
 
-          const listUsers1 = await Promise.all<UsersList>(neighborsList1.map(async (neighbor: NeighborMappingSchema) => {
-            const username = await this.findUserById(neighbor.neighbor2);
-            return { _id: neighbor.neighbor2, username };
-          }));
+      const listUsers1 = await Promise.all<UsersList>(neighborsList1.map(async (neighbor: NeighborMappingSchema) => {
+        const username = await this.findUserById(neighbor.neighbor2);
+        return { 
+          _id: neighbor.neighbor2,
+          username,
+        };
+      }));
 
 
-          const neighborsList2 = await this.neighborMappings.find({'neighbor2': currentUserId}).toArray();
+      const neighborsList2 = await this.neighborMappings.find( { 'neighbor2': currentUserId } ).toArray();
 
-          const listUsers2 = await Promise.all<UsersList>(neighborsList2.map(async (neighbor: NeighborMappingSchema) => {
-            const username = await this.findUserById(neighbor.neighbor1);
-            return { _id: neighbor.neighbor1, username };
-          }));
+      const listUsers2 = await Promise.all<UsersList>(neighborsList2.map(async (neighbor: NeighborMappingSchema) => {
+        const username = await this.findUserById(neighbor.neighbor1);
+        return { 
+          _id: neighbor.neighbor1,
+          username,
+        };
+      }));
 
-          return {
-            users: listUsers1.concat(listUsers2),
-          }
+      return {
+        users: listUsers1.concat(listUsers2),
+      };
 
-      } catch (err) {
-          return err.toString();
-      }
+    } catch (err) {
+      return err.toString();
+    }
   }
 
 
@@ -444,15 +456,13 @@ export default class DatabaseController {
    */
   async checkIfNeighbors(user1: string, user2: string): Promise<boolean | undefined> {
     try {
-      // const neighborMappings = this.getCollection('neighbor_mappings');
-
-      const neighbors1 = await this.neighborMappings.find({'neighbor1': user1, 'neighbor2': user2}).limit(1).toArray();
+      const neighbors1 = await this.neighborMappings.find( { 'neighbor1': user1, 'neighbor2': user2 } ).limit(1).toArray();
 
       if (neighbors1.length === 1) {
         return true;
       }
 
-      const neighbors2 = await this.neighborMappings.find({'neighbor1': user2, 'neighbor2': user1}).limit(1).toArray();
+      const neighbors2 = await this.neighborMappings.find( { 'neighbor1': user2, 'neighbor2': user1 } ).limit(1).toArray();
 
       if (neighbors2.length === 1) {
         return true;
@@ -479,9 +489,9 @@ export default class DatabaseController {
         return neighborStatus;
       }
 
-      await this.neighborRequests.deleteOne({'requestFrom': userSent, 'requestTo': userAccepting});
+      await this.neighborRequests.deleteOne( { 'requestFrom': userSent, 'requestTo': userAccepting } );
 
-      await this.neighborMappings.insertOne({'neighbor1': userSent, 'neighbor2': userAccepting});
+      await this.neighborMappings.insertOne( { 'neighbor1': userSent, 'neighbor2': userAccepting } );
 
       return {
         status: 'neighbor',
@@ -507,7 +517,7 @@ export default class DatabaseController {
         return findRequest;
       }
 
-      await this.neighborRequests.deleteOne({'requestFrom': user, 'requestTo': requestedUser});
+      await this.neighborRequests.deleteOne( { 'requestFrom': user, 'requestTo': requestedUser } );
 
       return { status: 'unknown' };
 
@@ -530,14 +540,14 @@ export default class DatabaseController {
         return neighborStatus;
       }
 
-      const neighbor1 = await this.neighborMappings.find({'neighbor1': user, 'neighbor2': neighbor}).limit(1).toArray();
+      const neighbor1 = await this.neighborMappings.find( { 'neighbor1': user, 'neighbor2': neighbor } ).limit(1).toArray();
 
       if (neighbor1.length === 1) {
-        await this.neighborMappings.deleteOne({'neighbor1': user, 'neighbor2': neighbor});
+        await this.neighborMappings.deleteOne( { 'neighbor1': user, 'neighbor2': neighbor } );
         return { status: 'unknown' };
       }
 
-      await this.neighborMappings.deleteOne({'neighbor1': neighbor, 'neighbor2': user});
+      await this.neighborMappings.deleteOne( { 'neighbor1': neighbor, 'neighbor2': user } );
       return { status: 'unknown' };
             
 
