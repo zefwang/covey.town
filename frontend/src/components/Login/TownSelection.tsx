@@ -250,6 +250,8 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
     } else {
       newStatus = user.relationship;
     }
+
+    await handleSearchClick() // Search again to refresh status TODO: Try and figure out a more efficient way
     return newStatus;
   }
 
