@@ -265,7 +265,7 @@ export default class TownsServiceClient {
   }
 
   async removeNeighbor(requestData: RemoveNeighbor): Promise<AddNeighborResponse> {
-    const repsponseWrapper = await this._axios.delete<ResponseEnvelope<AddNeighborResponse>>(`/users/remove_neighbor_mapping`, {data: requestData});
+    const responseWrapper = await this._axios.delete<ResponseEnvelope<AddNeighborResponse>>(`/users/remove_neighbor_mapping`, {data: requestData});
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
 
