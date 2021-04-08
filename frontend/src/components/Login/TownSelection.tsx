@@ -251,7 +251,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
                 You are logged in as
                 <Text fontSize='32px' color='green'>{loginResponse.username}</Text>
                 {
-                  isLoggedIn && <Profile userName={loginResponse.username} id={loginResponse._id}/>
+                  isLoggedIn && <Profile userName={loginResponse.username} id={loginResponse._id} handleJoin={handleJoin}/>
                   }
                 <Button mt='5' onClick={() => setIsLoggedIn(false)}>Sign into a different account</Button>
               </Box>
