@@ -70,4 +70,17 @@ export default class CoveyTownsStore {
     return false;
   }
 
+  /**
+   * Given a username, find the town this user is in if there is one
+   * @param username the username of the player to find
+   * @returns the covey town id of the Town the player is in or 'user_not_online'
+   */
+  checkIfUserOnline(username: string): string {
+    const townWithUser = this._towns.filter(town => town.isPlayerInRoom(username));
+    if (townWithUser.length !== 0) {
+      return townWithUser[0].coveyTownID;
+    }
+    return 'user_not_online';
+  }
+
 }
