@@ -326,10 +326,14 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
                 {searchOutput.map((user: AUser) =>
                   <Box display='flex' justifyContent='space-between' p='1' key={user._id} borderWidth='1px' alignItems='center'>
                     <Text>{user.username}</Text>
-                    <Button onClick={() => handleFriendRequestClick(user, false)}>{ labelNeighborStatus(user.relationship, false) }</Button>
+                    <Button onClick={() => handleFriendRequestClick(user, false)}>
+                      { labelNeighborStatus(user.relationship, false) }
+                    </Button>
                     {
                       user.relationship.status === 'requestReceived' &&
-                      <Button onClick={() => handleFriendRequestClick(user, true)}>{ labelNeighborStatus(user.relationship, true) }</Button>
+                      <Button onClick={() => handleFriendRequestClick(user, true)}>
+                        { labelNeighborStatus(user.relationship, true) }
+                      </Button>
                     }
                   </Box>
                 )}
