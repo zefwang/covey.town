@@ -92,7 +92,6 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
   }
 
   const updateTownListings = useCallback(() => {
-    // console.log(apiClient);
     apiClient.listTowns()
       .then((towns) => {
         setCurrentPublicTowns(towns.towns
@@ -127,6 +126,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
         return;
       }
       const initData = await Video.setup(loginResponse.username, coveyRoomID);
+      initData.loggedInID = loginResponse;
 
       const loggedIn = await doLogin(initData);
       if (loggedIn) {

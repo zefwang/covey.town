@@ -35,6 +35,8 @@ export interface TownJoinResponse {
   friendlyName: string;
   /** Is this a private town? * */
   isPubliclyListed: boolean;
+  /** Log in info for user * */
+  loggedInID: {_id: string, username: string};
 }
 
 /**
