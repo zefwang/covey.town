@@ -14,7 +14,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import useMaybeVideo from '../../../../hooks/useMaybeVideo';
 import useCoveyAppState from '../../../../hooks/useCoveyAppState';
 import { AUser } from '../../../../classes/TownsServiceClient';
-import { use } from 'matter';
 
 export default function NearbyPlayersList() {
   const {isOpen, onOpen, onClose} = useDisclosure()
@@ -24,22 +23,24 @@ export default function NearbyPlayersList() {
   //
   // console.log(nearbyPlayers);
   // console.log('loggedIn', loggedInID._id)
-  const searchOutput = useCallback(() => {
-    let usersList: AUser[] = [];
-
-    for (const player of nearbyPlayers.nearbyPlayers) {
-      apiClient.searchForUsersByUsername({
-        userIdSearching: loggedInID._id,
-        username: player.userName
-      }).then((results) => {
-        usersList.push(results.users[0]) // Only one result since exact search
-      })
-    }
-    setNearbyList(usersList);
-  }, [nearbyPlayers]);
   useEffect(() => {
+    const searchOutput = (async() => {
+      let usersList: AUser[];
+
+      const searchPromises = nearbyPlayers.nearbyPlayers.map((player) =>
+        apiClient.searchForUsersByUsername({
+          userIdSearching: loggedInID._id,
+          username: player.userName
+        })
+      )
+      const resList = await Promise.all(searchPromises);
+
+      usersList = resList.map((res) => res.users[0]); // first user b/c exact search
+      setNearbyList(usersList);
+    });
+
     searchOutput()
-  }, [searchOutput()]);
+  }, [nearbyPlayers]);
 
   const openSettings = useCallback(()=>{
     onOpen();
@@ -63,7 +64,7 @@ export default function NearbyPlayersList() {
         <ModalBody pb={6}>
           { nearbyList.map((player) => {
             return (
-              <div>
+              <div key={`game-${player._id}`}>
                 <p>{ player.username }</p>
                 <p>{ player.relationship }</p>
               </div>
