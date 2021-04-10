@@ -93,6 +93,22 @@ export default function NearbyPlayersList() {
       newStatus = user.relationship;
     }
 
+    // Refresh the updated user to get new relationship
+    const postRequestUserList = nearbyList.map(async (player) => {
+      if (player._id === user._id) {
+        const updatedPlayer = await apiClient.searchForUsersByUsername({
+          userIdSearching: loggedInID._id,
+          username: player.username
+        })
+        return updatedPlayer.users[0];
+      } else {
+        return player;
+      }
+    })
+
+    const resList = await Promise.all(postRequestUserList);
+    setNearbyList(resList);
+
     closeSettings()
     return newStatus;
   }
@@ -105,7 +121,7 @@ export default function NearbyPlayersList() {
     } else if (relationship.status === 'requestSent') {
       label = 'Remove Neighbor Request';
     } else if (relationship.status === 'requestReceived') {
-      label = isRejectRequest ? 'Deny Neighbor Request' : 'Accept Neighbor Request';
+      label = isRejectRequest ? 'Deny Request' : 'Accept Request';
     } else if (relationship.status === 'neighbor') {
       label = 'Remove as Neighbor';
     } else {
