@@ -41,7 +41,7 @@ describe('db', () => {
 
       const username = 'create4';
       const password = 'pass4';
-      const resp3= await db.insertUser(username, password);
+      const resp3 = await db.insertUser(username, password);
 
       const resp4 = await db.login(username, 'wrongpassword');
       expect(resp4).not.toHaveProperty('_id'); // doesn't have property if type string, which only happens on failure
@@ -58,21 +58,21 @@ describe('db', () => {
       const username = 'create4';
       const password = 'pass4';
       const resp = await db.insertUser(username, password);
-      const ans = { _id: resp._id, username: username };
+      const ans = { _id: resp._id, username };
 
       const userToSearch = 'userToSearchFor';
       const passwordForUser = 'pass1';
       const userToSearchFor = await db.insertUser(userToSearch, passwordForUser);
-      const userAns = { _id: userToSearchFor._id, username: userToSearch };
+      const userAns = { _id: userToSearchFor._id.toString(), username: userToSearch };
 
 
       const searchResp = await db.searchUsersByUsername(ans._id.toString(), userToSearch);
 
       const usersReturned = searchResp.users;
-      const id_one: String = usersReturned[0]._id as String;
-      const user_one: String = usersReturned[0].username as String;
-      expect(JSON.stringify(id_one)).toEqual(JSON.stringify(userToSearchFor._id));
-      expect(user_one).toEqual(userToSearchFor.username);
+      const idOne = usersReturned[0]._id.toString();
+      const userOne = usersReturned[0].username;
+      expect(idOne).toEqual(userToSearchFor._id);
+      expect(userOne).toEqual(userToSearchFor.username);
       await db.removeUserFromCollection(resp._id);
       await db.removeUserFromCollection(userAns._id);
     });
@@ -84,12 +84,12 @@ describe('db', () => {
       const resp = await db.insertUser(username, password);
 
       const searchResp = await db.searchUsersByUsername(resp._id.toString(), 'create5');
-      const ans = { _id: resp._id, username: username };
+      const ans = { _id: resp._id, username };
       const usersReturned = searchResp.users;
-      const id_one = usersReturned[0]._id;
-      const user_one = usersReturned[0].username
-      expect(JSON.stringify(id_one)).toEqual(JSON.stringify(ans._id));
-      expect(user_one).toEqual(ans.username);
+      const idOne = usersReturned[0]._id;
+      const userOne = usersReturned[0].username;
+      expect(JSON.stringify(idOne)).toEqual(JSON.stringify(ans._id));
+      expect(userOne).toEqual(ans.username);
       await db.removeUserFromCollection(resp._id);
     });
 
@@ -171,7 +171,7 @@ describe('db', () => {
       await db.removeUserFromCollection(resp._id);
       await db.removeUserFromCollection(resp2._id);
       await db.removeMappingFromCollection(resp._id, resp2._id);
-    })
+    });
   });
 
   describe('findUserId()', () => {
@@ -188,7 +188,7 @@ describe('db', () => {
     it('returns missing string if user does not exist', async () => {
       const resp = await db.findUserIdByUsername('create13');
       expect(resp).toEqual('user_not_found');
-    })
+    });
   });
 
   describe('neighborStatus()', () => {
@@ -285,7 +285,7 @@ describe('db', () => {
 
       const validation: string = await db.validateUser(resp._id);
       expect(validation).toEqual('user_not_found');
-    })
+    });
   });
 
   describe('acceptRequest()', () => { // all of them expect a neighbor status

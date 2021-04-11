@@ -16,6 +16,7 @@ export default class CoveyTownController {
   get capacity(): number {
     return this._capacity;
   }
+  
   set isPubliclyListed(value: boolean) {
     this._isPubliclyListed = value;
   }
@@ -152,5 +153,15 @@ export default class CoveyTownController {
 
   disconnectAllPlayers(): void {
     this._listeners.forEach((listener) => listener.onTownDestroyed());
+  }
+
+  /**
+   * Determines if the passed username is in this Town or not
+   * @param username the username of the player to search for
+   * @returns true if this user is in the room, false otherwise
+   */
+  isPlayerInRoom(username: string): boolean {
+    const user = this.players.find(player => player.userName === username);
+    return user !== undefined;
   }
 }

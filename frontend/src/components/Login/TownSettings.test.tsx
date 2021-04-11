@@ -53,6 +53,7 @@ function wrappedTownSettings() {
     emitMovement: () => {
     },
     apiClient: new TownsServiceClient(),
+    loggedInID: {_id: '', username: ''},
   }}>
     <TownSettings/></CoveyAppContext.Provider></ChakraProvider>;
 }

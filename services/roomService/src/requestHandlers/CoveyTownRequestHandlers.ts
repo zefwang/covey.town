@@ -4,7 +4,7 @@ import Player from '../types/Player';
 import { CoveyTownList, UserLocation } from '../CoveyTypes';
 import CoveyTownListener from '../types/CoveyTownListener';
 import CoveyTownsStore from '../lib/CoveyTownsStore';
-import DatabaseController, { AccountCreateResponse, LoginResponse, NeighborStatus, ListUsersResponse, UserWithRelationship, UsersList } from '../database/db';
+import DatabaseController, { AccountCreateResponse, LoginResponse, NeighborStatus, ListUsersResponse, UserWithRelationship, UsersList, UsersListWithOnline } from '../database/db';
 
 /**
  * The format of a request to join a Town in Covey.Town, as dispatched by the server middleware
@@ -80,40 +80,64 @@ export interface TownUpdateRequest {
   isPubliclyListed?: boolean;
 }
 
+/**
+ * Payload sent by client to create an account
+ */
 export interface AccountCreateRequest {
   username: string,
   password: string,
 }
 
+/**
+ * Payload sent by client to login a user
+ */
 export interface LoginRequest {
   username: string,
   password: string,
 }
 
+/**
+ * Paylod sent by client to search for users
+ */
 export interface SearchUsersRequest {
   currentUserId: string,
   username: string,
 }
 
+/**
+ * Payload sent by client to send an Neighbor request
+ */
 export interface AddNeighborRequest {
   currentUserId: string,
   UserIdToRequest: string,
 }
 
+/**
+ * Payload sent back to client with the status after sending a NeighborRequest
+ */
 export interface AddNeighborResponse {
   status: string,
 }
 
+/**
+ * Payload sent by client to accept a Neighbor request
+ */
 export interface AcceptNeighborRequestRequest {
   userAccepting: string,
   userSent: string,
 }
 
+/**
+ * Payload sent by client to delete a Neighbor request
+ */
 export interface RemoveNeighborRequestRequest {
   currentUser: string,
   requestedUser: string,
 }
 
+/**
+ * Payload sent by client to remove a Neighbor relationship
+ */
 export interface RemoveNeighborMappingRequest {
   currentUser: string,
   neighbor: string,
@@ -380,23 +404,34 @@ export async function acceptRequestHandler(requestData: AcceptNeighborRequestReq
   }
 }
 
-  export async function listNeighbors(currentUserId: string) : Promise<ResponseEnvelope<ListUsersResponse<UsersList>>> {
-    try {
-      const db = new DatabaseController();
-      await db.connect();
-      const neighborsList = await db.listNeighbors(currentUserId);
+export async function listNeighbors(currentUserId: string) : Promise<ResponseEnvelope<ListUsersResponse<UsersListWithOnline>>> {
+  try {
+    const db = new DatabaseController();
+    await db.connect();
+    const neighborsList = await db.listNeighbors(currentUserId);
+
+    const store = CoveyTownsStore.getInstance();
+
+    const neighborsListWithOnline = neighborsList.users.map<UsersListWithOnline>((neighbor: UsersList) => {
+      const coveyTownID = store.checkIfUserOnline(neighbor.username);
+      if (coveyTownID === 'user_not_online') {
+        return { _id: neighbor._id, username: neighbor.username, isOnline: false  };
+      }
+      return { _id: neighbor._id, username: neighbor.username, isOnline:  true, coveyTownID };
+    });
 
     db.close();
     return {
       isOK: true,
-      response: neighborsList,
-    }
-
+      response: {
+        users: neighborsListWithOnline,
+      },
+    };
   } catch (err) {
     return {
       isOK: false,
-      message: err.toString()
-    }
+      message: err.toString(),
+    };
   }
 }
 
@@ -411,13 +446,13 @@ export async function listRequestsReceived(currentUserId: string) : Promise<Resp
     return {
       isOK: true,
       response: requestsReceivedList,
-    }
+    };
 
   } catch (err) {
     return {
       isOK: false,
-      message: err.toString()
-    }
+      message: err.toString(),
+    };
   }
 }
 
@@ -432,13 +467,13 @@ export async function listRequestsSent(currentUserId: string) : Promise<Response
     return {
       isOK: true,
       response: requestsSentList,
-    }
+    };
 
   } catch (err) {
     return {
       isOK: false,
-      message: err.toString()
-    }
+      message: err.toString(),
+    };
   }
 }
 
