@@ -20,7 +20,7 @@ If a user is found with that exact username, that will be the only result, but o
 names starting with the search query. In the example below, all users with "user" in their username will be included in
 the search results (except the user searching).
 
-![SearchForUsers](docs/searchAfterLogScreenshot.png)
+![SearchForUser](docs/searchAfterLogIn.png)
 
 There are 4 possible relationships to other users:
 1. Unknown - you do not know this user, you can send a "Neighbor Request"
