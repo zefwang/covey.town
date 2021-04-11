@@ -263,7 +263,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
     } else if (relationship.status === 'requestSent') {
       label = 'Remove Neighbor Request';
     } else if (relationship.status === 'requestReceived') {
-      label = isRejectRequest ? 'Deny Neighbor Request' : 'Accept Neighbor Request';
+      label = isRejectRequest ? 'Deny Request' : 'Accept Request';
     } else if (relationship.status === 'neighbor') {
       label = 'Remove as Neighbor';
     } else {
