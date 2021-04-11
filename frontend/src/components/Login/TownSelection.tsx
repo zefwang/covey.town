@@ -251,7 +251,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
       newStatus = user.relationship;
     }
 
-    await handleSearchClick() // Search again to refresh status TODO: Try and figure out a more efficient way
+    await handleSearchClick() // Search again to refresh status
     return newStatus;
   }
 
@@ -270,6 +270,23 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
       label = 'Unknown';
     }
     // Have to do this stupid way because of ESLint "unnecessary else after return'
+    return label;
+  }
+
+  const getRelationship = (relation: NeighborStatus): string => {
+    let label: string;
+
+    if (relation.status === "unknown") {
+      label = 'No Relation';
+    } else if (relation.status === 'requestSent') {
+      label = 'Request Sent';
+    } else if (relation.status === 'requestReceived') {
+      label = 'Request Received';
+    } else if (relation.status === 'neighbor') {
+      label = 'Neighbors';
+    } else {
+      label = 'Unknown';
+    }
     return label;
   }
 
@@ -325,7 +342,10 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
                 <Heading as='h3' size='sm'>Search Results</Heading>
                 {searchOutput.map((user: AUser) =>
                   <Box display='flex' justifyContent='space-between' p='1' key={user._id} borderWidth='1px' alignItems='center'>
-                    <Text>{user.username}</Text>
+                    <Box display='flex' alignItems='center'>
+                      <Text>{user.username}</Text>
+                      <Text ml='1' fontSize='sm'>{`| ${getRelationship(user.relationship)}`}</Text>
+                    </Box>
                     <Button onClick={() => handleFriendRequestClick(user, false)}>
                       { labelNeighborStatus(user.relationship, false) }
                     </Button>
