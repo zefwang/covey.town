@@ -18,7 +18,7 @@ import {
   Thead,
   Tr,
   Text,
-  useToast,
+  useToast
 } from '@chakra-ui/react';
 import useVideoContext from '../VideoCall/VideoFrontend/hooks/useVideoContext/useVideoContext';
 import Video from '../../classes/Video/Video';
@@ -28,13 +28,6 @@ import Profile from './Profile';
 
 interface TownSelectionProps {
   doLogin: (iniData: TownJoinResponse) => Promise<boolean>
-}
-
-export enum NeighborStatus {
-  SendRequest = 'Send Friend Request',
-  Sent = 'Friend Request Sent',
-  AcceptRequest = 'Accept Friend Request',
-  Friends = 'Friends',
 }
 
 export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Element {
@@ -333,9 +326,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
               <Box mt='5'>
                 You are logged in as
                 <Text fontSize='32px' color='green'>{loginResponse.username}</Text>
-                {
-                  isLoggedIn && <Profile userName={loginResponse.username} id={loginResponse._id} handleJoin={handleJoin}/>
-                  }
+                <Profile userName={loginResponse.username} id={loginResponse._id} handleJoin={handleJoin}/>
                 <Button mt='5' onClick={() => setIsLoggedIn(false)}>Sign into a different account</Button>
               </Box>
             }
