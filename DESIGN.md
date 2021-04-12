@@ -69,7 +69,7 @@ We made two changes to the codebase, along with a couple additions to the fronte
 
 1. Added `LoggedInID` to the CoveyAppState type. This allowed us to keep track of the current logged in user's ID and
    username, which we used in the NearbyPlayersList modal in game.
-2. We removed the original username component, requiring users to input both a username and password. Additionally, since
+2. We removed the original username component in `frontend/src/components/Login/TownSelection.tsx`, requiring users to input both a username and password. Additionally, since
    we were adding persistence, we gave two options: sign-up or log in. This is shown in the Features.MD file in more detail.
 
 ### New Features
@@ -79,5 +79,6 @@ In addition to these changes, we added multiple new features such as:
 1. A search box that shows up after a user is logged in. This uses a new route `/users/:currentUserId/:username`, to list
    either the user with that specific username or any user whose username starts with the search term.
 2. An account page that displays after a user is logged in.
+3. A modal (`frontend/src/components/VideoCall/VideoFrontend/components/NearbyPlayersList.tsx`) displaying nearby players in game and allows the user to manage relationship similar to the search box.
 
 More about the functionality for these particular components can be found in the Features.MD documentation.
