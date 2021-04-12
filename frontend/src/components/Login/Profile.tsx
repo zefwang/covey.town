@@ -20,7 +20,7 @@ import {
     Tbody,
   } from '@chakra-ui/react';
 import { Typography } from '@material-ui/core';
-import {AcceptNeighborRequest, ListNeighborsResponse, ListRequestsResponse, RemoveNeighborRequest} from '../../classes/TownsServiceClient';
+import {AcceptNeighborRequestRequest, ListNeighborsResponse, ListRequestsResponse, RemoveNeighborRequestRequest} from '../../classes/TownsServiceClient';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
 
 
@@ -39,11 +39,11 @@ export default function Profile (props : {userName : string, id : string, handle
             .then((users) => {
                 setNeighbors(users);
             })
-        apiClient.listRequestsReceived(id)
+        apiClient.listNeighborRequestsReceived(id)
             .then((users) => {
                 setReceivedRequests(users);
             })
-        apiClient.listRequestsSent(id)
+        apiClient.listNeighborRequestsSent(id)
             .then((users) => {
                 setSentRequests(users);
             })
@@ -53,12 +53,12 @@ export default function Profile (props : {userName : string, id : string, handle
         onClose();
     }, [onClose])
 
-    const acceptRequest = async (request : AcceptNeighborRequest) => {
-        await apiClient.acceptNeigborRequest(request)
+    const acceptRequest = async (request : AcceptNeighborRequestRequest) => {
+        await apiClient.acceptRequestHandler(request)
     }
 
-    const removeRequest = async (request : RemoveNeighborRequest) => {
-        await apiClient.removeNeighborRequest(request);
+    const removeRequest = async (request : RemoveNeighborRequestRequest) => {
+        await apiClient.removeNeighborRequestHandler(request);
     }
 
     return (
@@ -105,7 +105,7 @@ export default function Profile (props : {userName : string, id : string, handle
                                     {
                                         sentRequests.users.map((user) => (
                                             <Tr key={user._id}><Td>{user.username}</Td><Td><Button onClick={() => removeRequest({
-                                                user: id,
+                                                currentUser: id,
                                                 requestedUser: user._id,
                                             })}>Delete</Button></Td></Tr>
                                         ))

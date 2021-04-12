@@ -255,4 +255,19 @@ export default class TownsServiceClient {
     const responseWrapper = await this._axios.delete<ResponseEnvelope<NeighborStatus>>(`/users/remove_neighbor_mapping/${requestData.currentUser}/${requestData.neighbor}`);
     return TownsServiceClient.unwrapOrThrowError(responseWrapper);
   }
+
+  async listNeighbors(currentUser: string): Promise<ListNeighborsResponse> {
+    const responseWrapper = await this._axios.get<ResponseEnvelope<ListNeighborsResponse>>(`/neighbors/${currentUser}`);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async listNeighborRequestsReceived(currentUser: string): Promise<ListRequestsResponse> {
+    const responseWrapper = await this._axios.get<ResponseEnvelope<ListRequestsResponse>>(`/requests_received/${currentUser}`);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
+
+  async listNeighborRequestsSent(currentUser: string): Promise<ListRequestsResponse> {
+    const responseWrapper = await this._axios.get<ResponseEnvelope<ListRequestsResponse>>(`/requests_sent/${currentUser}`);
+    return TownsServiceClient.unwrapOrThrowError(responseWrapper);
+  }
 }
