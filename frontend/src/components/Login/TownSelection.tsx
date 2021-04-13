@@ -24,6 +24,7 @@ import useVideoContext from '../VideoCall/VideoFrontend/hooks/useVideoContext/us
 import Video from '../../classes/Video/Video';
 import { LoginResponse, CoveyTownInfo, TownJoinResponse, AUser, NeighborStatus } from '../../classes/TownsServiceClient';
 import useCoveyAppState from '../../hooks/useCoveyAppState';
+import Profile from './Profile';
 
 interface TownSelectionProps {
   doLogin: (iniData: TownJoinResponse) => Promise<boolean>
@@ -325,6 +326,7 @@ export default function TownSelection({ doLogin }: TownSelectionProps): JSX.Elem
               <Box mt='5'>
                 You are logged in as
                 <Text fontSize='32px' color='green'>{loginResponse.username}</Text>
+                <Profile userName={loginResponse.username} id={loginResponse._id} handleJoin={handleJoin}/>
                 <Button mt='5' onClick={() => setIsLoggedIn(false)}>Sign into a different account</Button>
               </Box>
             }
