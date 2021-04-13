@@ -27,7 +27,9 @@ import TownsServiceClient, { TownJoinResponse } from './classes/TownsServiceClie
 import Video from './classes/Video/Video';
 
 type CoveyAppUpdate =
-  | { action: 'doConnect'; data: { userName: string, townFriendlyName: string, townID: string,townIsPubliclyListed:boolean, sessionToken: string, myPlayerID: string, socket: Socket, players: Player[], emitMovement: (location: UserLocation) => void } }
+  | { action: 'doConnect'; data: { userName: string, townFriendlyName: string, townID: string,
+    townIsPubliclyListed:boolean, sessionToken: string, myPlayerID: string, socket: Socket, players: Player[],
+    emitMovement: (location: UserLocation) => void, loggedInID: {_id: string, username: string}}}
   | { action: 'addPlayer'; player: Player }
   | { action: 'playerMoved'; player: Player }
   | { action: 'playerDisconnect'; player: Player }
@@ -52,6 +54,7 @@ function defaultAppState(): CoveyAppState {
     emitMovement: () => {
     },
     apiClient: new TownsServiceClient(),
+    loggedInID: {_id: '', username: ''}
   };
 }
 function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyAppState {
@@ -68,6 +71,7 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
     socket: state.socket,
     emitMovement: state.emitMovement,
     apiClient: state.apiClient,
+    loggedInID: state.loggedInID
   };
 
   function calculateNearbyPlayers(players: Player[], currentLocation: UserLocation) {
@@ -102,6 +106,7 @@ function appStateReducer(state: CoveyAppState, update: CoveyAppUpdate): CoveyApp
       nextState.emitMovement = update.data.emitMovement;
       nextState.socket = update.data.socket;
       nextState.players = update.data.players;
+      nextState.loggedInID = update.data.loggedInID;
       break;
     case 'addPlayer':
       nextState.players = nextState.players.concat([update.player]);
@@ -152,6 +157,7 @@ async function GameController(initData: TownJoinResponse,
   // Now, set up the game sockets
   const gamePlayerID = initData.coveyUserID;
   const sessionToken = initData.coveySessionToken;
+  const loggedInAccount = initData.loggedInID;
   const url = process.env.REACT_APP_TOWNS_SERVICE_URL;
   assert(url);
   const video = Video.instance();
@@ -194,6 +200,7 @@ async function GameController(initData: TownJoinResponse,
       emitMovement,
       socket,
       players: initData.currentPlayers.map((sp) => Player.fromServerPlayer(sp)),
+      loggedInID: loggedInAccount
     },
   });
   return true;
