@@ -82,7 +82,7 @@ export interface NeighborMappingSchema {
  * Schema for neighbor_request collection in database
  */
 export interface NeighborRequestSchema {
-  _id: string, 
+  _id: string,
   requestTo: string, // will be user id
   requestFrom: string, // will be user id
 }
@@ -197,7 +197,7 @@ export default class DatabaseController {
 
       if (findUser.length === 0) {
         return 'Invalid Username and Password';
-      } 
+      }
 
       return  {
         _id: String(findUser[0]._id),
@@ -231,9 +231,9 @@ export default class DatabaseController {
         assert(match.username);
         const partialMatchStatus: NeighborStatus = await this.neighborStatus(currentUserId, match._id.toString());
         assert(partialMatchStatus.status);
-        return { 
-          _id: match._id, 
-          username: match.username, 
+        return {
+          _id: match._id,
+          username: match.username,
           relationship: partialMatchStatus,
         };
       }));
@@ -282,14 +282,14 @@ export default class DatabaseController {
       return err.toString();
     }
   }
-  
+
 
   /**
    * Validates that a given user ID belongs to an account
    * @param userID user id to validate
-   * @returns 
+   * @returns
    */
-  async validateUser(userID: string) : Promise<string> { 
+  async validateUser(userID: string) : Promise<string> {
     try {
       const findUser = await this.userCollection.find( { '_id': new ObjectID(userID) } ).limit(1).toArray();
       if (findUser.length === 1) {
@@ -369,8 +369,8 @@ export default class DatabaseController {
 
       const listUsers = await Promise.all<UsersList>(requestReceived.map(async (requester: NeighborRequestSchema) => {
         const username = await this.findUserById(requester.requestFrom);
-        return { 
-          _id: requester.requestFrom, 
+        return {
+          _id: requester.requestFrom,
           username,
         };
       }));
@@ -382,7 +382,7 @@ export default class DatabaseController {
     } catch (err) {
       return err.toString();
     }
-  } 
+  }
 
   /**
    * List all users who have been sent a request by the current user
@@ -395,7 +395,7 @@ export default class DatabaseController {
 
       const listUsers = await Promise.all<UsersList>(requestSent.map(async (requestee: NeighborRequestSchema) => {
         const username = await this.findUserById(requestee.requestTo);
-        return { 
+        return {
           _id: requestee.requestTo,
           username,
         };
@@ -421,7 +421,7 @@ export default class DatabaseController {
 
       const listUsers1 = await Promise.all<UsersList>(neighborsList1.map(async (neighbor: NeighborMappingSchema) => {
         const username = await this.findUserById(neighbor.neighbor2);
-        return { 
+        return {
           _id: neighbor.neighbor2,
           username,
         };
@@ -432,7 +432,7 @@ export default class DatabaseController {
 
       const listUsers2 = await Promise.all<UsersList>(neighborsList2.map(async (neighbor: NeighborMappingSchema) => {
         const username = await this.findUserById(neighbor.neighbor1);
-        return { 
+        return {
           _id: neighbor.neighbor1,
           username,
         };
@@ -549,7 +549,7 @@ export default class DatabaseController {
 
       await this.neighborMappings.deleteOne( { 'neighbor1': neighbor, 'neighbor2': user } );
       return { status: 'unknown' };
-            
+
 
     } catch (err) {
       return err.toString();
