@@ -304,7 +304,7 @@ describe('Town Selection - depends on Part 1 passing', () => {
             }));
         });
 
-      });*/
+      }); */
     });
   });
 
