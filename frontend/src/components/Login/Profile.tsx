@@ -76,18 +76,10 @@ export default function Profile (props : {userName : string, id : string, handle
         <Modal isOpen={isOpen} onClose={closeProfile} size='xl'>
             <ModalOverlay/>
             <ModalContent>
-                <ModalHeader>Profile</ModalHeader>
+                <ModalHeader>Profile for {userName}</ModalHeader>
                 <ModalCloseButton/>
                 <form>
                     <ModalBody pb={6}>
-                        <FormControl>
-                            <FormLabel htmlFor='username'>Username</FormLabel>
-                            <Input value={userName} isDisabled/>
-                        </FormControl>
-                        <FormControl>
-                            <FormLabel htmlFor='password'>Password</FormLabel>
-                            <Input placeholder='Password' isDisabled/>
-                        </FormControl>
                         <Heading p="4" as="h4" size="md">Neighbors</Heading>
                         <FormControl>
                             <Table>
@@ -97,8 +89,8 @@ export default function Profile (props : {userName : string, id : string, handle
                                         neighbors.users.map((user) => (
                                             <Tr key={user._id}><Td>{user.username}</Td><Td>{user.isOnline? 'Online' : 'Offline'}</Td>
                                             <Td>
-                                                {user.coveyTownID && 
-                                                <Button onClick={() => handleJoin(user._id)}>Join</Button>
+                                                {user.isOnline && user.coveyTownID && 
+                                                <Button onClick={() => handleJoin(String(user.coveyTownID))}>Join</Button>
                                                 }</Td><Td><Button colorScheme='red' onClick={() => removeNeighbor({
                                                     currentUser: id,
                                                     neighbor: user._id,
