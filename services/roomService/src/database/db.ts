@@ -97,6 +97,7 @@ export default class DatabaseController {
   private neighborMappings!: Collection<any>;
 
   constructor() {
+    console.log(`Mongo: ${process.env.MONGO_URL}`)
     assert(process.env.MONGO_URL, 'Must have Mongo URL to connect to database');
     this.client = new MongoClient(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true });
   }
