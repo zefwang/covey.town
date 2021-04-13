@@ -32,6 +32,40 @@ To create an account and configure your local environment:
 | `TWILIO_API_KEY_SECRET` | The secret for the API key you created.   |
 | `TWILIO_API_AUTH_TOKEN` | Visible on your twilio account dashboard. |
 
+
+### Creating and Connecting to MongoDB
+
+With our addition of CoveyTown Neighbors, you will need a MongoDB account as well. MongoAtlas offers free accounts and cloud hosting for MongoDB instances at https://www.mongodb.com/cloud/atlas. After creating an account, MongoAtlas will automatically create a cluster for you. Choose all the free tier options, no need to upgrade to anything. While your clustering is launching, lets configure the permissions and access for your MongoDB instance. On the left hand menu, click Network Access. 
+
+![MongoAtlas Side Menu](docs/mongodb_side_menu.png)
+
+Click '+ Add IP Address' on the right side of the window and add '0.0.0.0/0' to whitelist all IP addresses, or you can add only your IP address. Save and navigate to Database Access to create a database user to access your MongoDB instance.
+
+Enter any username and password you'd like but ensure that you set the permissions to read and write to any database. Save this information for later. Now our cluster should be up and running so let's navigate back to 'Clusters' on the side menu to create our database and collections. On your cluster, click 'Collections'. 
+
+![Cluster View](docs/mongodb_cluster.png)
+
+Click 'Create Database' and enter 'coveytown' for the database name and 'user' for the first collection. 
+
+![Create a Database](docs/mongodb_create_a_database.png)
+
+After your database is created, create two additional collections, 'neighbor_request' and 'neighbor_mapping' by pressing the '+' sign next to your database. 
+
+![Create additional collections](docs/mongodb_additional_collections.png)
+
+The last thing that we need to do is connect our application to the database. Go back to 'Clusters' page in your console and click 'CONNECT' on your cluster. Select 'Connect your application'. Choose your node version and copy the URI that is in the example code. Replace `<password>` in the URI with your database user's password from earlier. 
+
+![Connect to application](docs/mongodb_connect_to_application.png)
+
+Copy the URI into your `.env` file with the Twilio credentials as follows:
+
+| Config Value            | Description                               |
+| ----------------------- | ----------------------------------------- |
+| `MONGO_URL`             | URI to connnect to your MongoDB instance. |
+
+The last thing you'll need to do to connect to your MongoDB instance is to whitelist your IP address. 
+
+
 ### Starting the backend
 
 Once your backend is configured, you can start it by running `npm start` in the `services/roomService` directory (the first time you run it, you will also need to run `npm install`).
