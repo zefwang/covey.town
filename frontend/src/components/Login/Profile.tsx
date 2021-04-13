@@ -2,9 +2,7 @@ import React, { useCallback, useState } from 'react';
 import {
     Button,
     FormControl,
-    FormLabel,
     Heading,
-    Input,
     Modal,
     ModalBody,
     ModalCloseButton,
