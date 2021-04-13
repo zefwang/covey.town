@@ -31,10 +31,12 @@ There are 4 possible relationships to other users:
 #### In Game 
 While in a game, a user can look at their relationship with nearby players by clicking "Nearby Players List" in the bottom
 right corner of the screen, next to the town settings.
+
 ![NearbyList](docs/nearbyList.png)
 
 This will bring up a list of nearby players and allows the user to send a neighbor request, remove a neighbor, etc, in a
 manner similar to the pre-game search box.
+
 ![InGameList](docs/inGameAdd.png)
 
 #### User Account Page
