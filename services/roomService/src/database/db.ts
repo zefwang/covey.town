@@ -64,7 +64,7 @@ export interface LoginResponse {
  * Schema for user collection in database
  */
 export interface UserSchema {
-  _id: string,
+  _id: ObjectID,
   username: string,
   password: string,
 }
@@ -73,7 +73,7 @@ export interface UserSchema {
  * Schema for neighbor_mapping collection in database
  */
 export interface NeighborMappingSchema {
-  _id: string,
+  _id: ObjectID,
   neighbor1: string, // will be user id
   neighbor2: string, // will be user id
 }
@@ -82,7 +82,7 @@ export interface NeighborMappingSchema {
  * Schema for neighbor_request collection in database
  */
 export interface NeighborRequestSchema {
-  _id: string,
+  _id: ObjectID, 
   requestTo: string, // will be user id
   requestFrom: string, // will be user id
 }
@@ -90,15 +90,15 @@ export interface NeighborRequestSchema {
 export default class DatabaseController {
   private client: MongoClient;
 
-  private userCollection!: Collection<any>;
+  private userCollection!: Collection<UserSchema>;
 
-  private neighborRequests!: Collection<any>;
+  private neighborRequests!: Collection<NeighborRequestSchema>;
 
-  private neighborMappings!: Collection<any>;
+  private neighborMappings!: Collection<NeighborMappingSchema>;
 
   constructor() {
-    assert(process.env.MONGO_URL, 'Must have Mongo URL to connect to database');
-    this.client = new MongoClient(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true });
+    // assert(process.env.MONGO_URL, 'Must have Mongo URL to connect to database');
+    this.client = new MongoClient('mongodb://dev-user:cs4530COVEY@cluster-dev-shard-00-00.vpr5c.mongodb.net:27017,cluster-dev-shard-00-01.vpr5c.mongodb.net:27017,cluster-dev-shard-00-02.vpr5c.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-nii6qx-shard-0&authSource=admin&retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
   }
 
   /**
@@ -197,11 +197,11 @@ export default class DatabaseController {
 
       if (findUser.length === 0) {
         return 'Invalid Username and Password';
-      }
+      } 
 
       return  {
-        _id: String(findUser[0]._id),
-        username: String(findUser[0].username),
+        _id: findUser[0]._id.toString(),
+        username: findUser[0].username,
       };
     } catch (err) {
       return err.toString();
@@ -210,7 +210,7 @@ export default class DatabaseController {
 
   async searchUsersByUsername(currentUserId: string, username: string) : Promise<ListUsersResponse<UserWithRelationship>> {
     try {
-      const userId = await this.findUserIdByUsername(username) as string;
+      const userId = await this.findUserIdByUsername(username);
       const status = await this.neighborStatus(currentUserId, userId);
       if (userId !== 'user_not_found') {
         return {
@@ -231,9 +231,9 @@ export default class DatabaseController {
         assert(match.username);
         const partialMatchStatus: NeighborStatus = await this.neighborStatus(currentUserId, match._id.toString());
         assert(partialMatchStatus.status);
-        return {
-          _id: match._id,
-          username: match.username,
+        return { 
+          _id: match._id.toString(), 
+          username: match.username, 
           relationship: partialMatchStatus,
         };
       }));
@@ -274,7 +274,7 @@ export default class DatabaseController {
     try {
       const findUser = await this.userCollection.find( { '_id': new ObjectID(id) } ).limit(1).toArray();
       if (findUser.length === 1) {
-        return findUser[0].username as string;
+        return findUser[0].username;
       }
       return 'user_not_found';
 
@@ -282,14 +282,14 @@ export default class DatabaseController {
       return err.toString();
     }
   }
-
+  
 
   /**
    * Validates that a given user ID belongs to an account
    * @param userID user id to validate
-   * @returns
+   * @returns 
    */
-  async validateUser(userID: string) : Promise<string> {
+  async validateUser(userID: string) : Promise<string> { 
     try {
       const findUser = await this.userCollection.find( { '_id': new ObjectID(userID) } ).limit(1).toArray();
       if (findUser.length === 1) {
@@ -369,8 +369,8 @@ export default class DatabaseController {
 
       const listUsers = await Promise.all<UsersList>(requestReceived.map(async (requester: NeighborRequestSchema) => {
         const username = await this.findUserById(requester.requestFrom);
-        return {
-          _id: requester.requestFrom,
+        return { 
+          _id: requester.requestFrom, 
           username,
         };
       }));
@@ -382,7 +382,7 @@ export default class DatabaseController {
     } catch (err) {
       return err.toString();
     }
-  }
+  } 
 
   /**
    * List all users who have been sent a request by the current user
@@ -395,7 +395,7 @@ export default class DatabaseController {
 
       const listUsers = await Promise.all<UsersList>(requestSent.map(async (requestee: NeighborRequestSchema) => {
         const username = await this.findUserById(requestee.requestTo);
-        return {
+        return { 
           _id: requestee.requestTo,
           username,
         };
@@ -421,7 +421,7 @@ export default class DatabaseController {
 
       const listUsers1 = await Promise.all<UsersList>(neighborsList1.map(async (neighbor: NeighborMappingSchema) => {
         const username = await this.findUserById(neighbor.neighbor2);
-        return {
+        return { 
           _id: neighbor.neighbor2,
           username,
         };
@@ -432,7 +432,7 @@ export default class DatabaseController {
 
       const listUsers2 = await Promise.all<UsersList>(neighborsList2.map(async (neighbor: NeighborMappingSchema) => {
         const username = await this.findUserById(neighbor.neighbor1);
-        return {
+        return { 
           _id: neighbor.neighbor1,
           username,
         };
@@ -549,7 +549,7 @@ export default class DatabaseController {
 
       await this.neighborMappings.deleteOne( { 'neighbor1': neighbor, 'neighbor2': user } );
       return { status: 'unknown' };
-
+            
 
     } catch (err) {
       return err.toString();
