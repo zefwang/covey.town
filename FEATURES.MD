@@ -45,3 +45,17 @@ neighbor requests, and they will be able to respond to these requests (Accept/De
 to a table of all their online neighbors and be able to join their towns. This will be explained next.
 
 ## Interacting with Neighbors
+After logging in, a user will now see a "Profile" button below their username as shown below:
+
+![LoginUpdated](docs/loginUpdated.png)
+
+Clicking on this button will bring up a modal which allows the user to:
+1. See current neighbors and join the towns of those who are online
+2. See any pending neighbor requests they have sent
+3. Accept or deny any neighbor requests that were sent to them
+
+![ProfileModal](docs/profileModal.png)
+
+## Conclusion
+This documentation has covered the three user stories we set out to create and have successfully implemented. Please 
+check out DESIGN.MD for any implementation questions, or the README for any setup related questions.
