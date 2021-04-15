@@ -278,7 +278,7 @@ describe('CoveyTownRequestHandlers', () => {
         } else {
           throw Error('this failed when it should be passing');
         }
-          await db.removeUserFromCollection(resp2.response._id.toString());
+        await db.removeUserFromCollection(resp2.response._id.toString());
       } else {
         throw Error('this failed when it should be passing');
       }
