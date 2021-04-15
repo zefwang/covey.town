@@ -25,7 +25,7 @@ describe('CoveyTownRequestHandlers', () => {
 
       expect(resp.isOK).toBeTruthy();
 
-      if (resp.response) {
+      if (resp.response) { 
         expect(resp.response._id).toBeDefined();
         expect(resp.response.username).toEqual(username);
         await db.removeUserFromCollection(resp.response._id.toString());
@@ -38,10 +38,10 @@ describe('CoveyTownRequestHandlers', () => {
       const req1: AccountCreateRequest = { username: 'create2', password: '' }; // should fail on 'invalid password'
       const req2: AccountCreateRequest = { username: 'create3', password: 'create3pass' }; // should successfully get in
       const req3: AccountCreateRequest = { username: 'create3', password: 'create3pass2' }; // should fail on 'username taken'
-
+        
       const resp1: ResponseEnvelope<AccountCreateResponse> = await accountCreateHandler(req1);
       expect(resp1.isOK).toBeFalsy();
-      if (resp1.message) {
+      if (resp1.message) { 
         expect(resp1.message).toEqual('Invalid Password');
       } else {
         throw Error('this failed when it should be passing');
@@ -52,7 +52,7 @@ describe('CoveyTownRequestHandlers', () => {
 
       const resp3: ResponseEnvelope<AccountCreateResponse> = await accountCreateHandler(req3);
       expect(resp3.isOK).toBeFalsy();
-      if (resp3.message) {
+      if (resp3.message) { 
         expect(resp3.message).toEqual('Username Taken');
       } else {
         throw Error('this failed when it should be passing');
@@ -77,7 +77,7 @@ describe('CoveyTownRequestHandlers', () => {
       const loginReq: LoginRequest = { username, password };
       const loginResp: ResponseEnvelope<LoginResponse|string> = await loginHandler(loginReq);
       expect(loginResp.isOK).toBeTruthy();
-
+            
       if (loginResp.response) {
         expect(loginResp.response).toHaveProperty('_id');
         expect(loginResp.response).toHaveProperty('username');
@@ -207,7 +207,7 @@ describe('CoveyTownRequestHandlers', () => {
         }
       } else  {
         throw Error('this failed when it should be passing');
-      }
+      }   
     });
 
     it('searched and none found', async () => {
@@ -278,7 +278,7 @@ describe('CoveyTownRequestHandlers', () => {
         } else {
           throw Error('this failed when it should be passing');
         }
-        await db.removeUserFromCollection(resp2.response._id.toString());
+          await db.removeUserFromCollection(resp2.response._id.toString());
       } else {
         throw Error('this failed when it should be passing');
       }
@@ -324,7 +324,7 @@ describe('CoveyTownRequestHandlers', () => {
         const neighborResp2: ResponseEnvelope<AddNeighborResponse> = await sendAddNeighborRequest(neighborReq);
         expect(neighborResp.isOK).toBeTruthy();
         expect(neighborResp2.isOK).toBeTruthy();
-
+        
         if (neighborResp2.response) {
           expect(neighborResp2.response.status).toEqual('requestSent');
         } else {
@@ -615,7 +615,7 @@ describe('CoveyTownRequestHandlers', () => {
       expect(resp2.isOK).toBeTruthy();
 
       if (resp.response && resp2.response) {
-        const removeReq: RemoveNeighborRequestRequest =  { currentUser: resp.response._id, requestedUser: resp2.response._id };
+        const removeReq: RemoveNeighborRequestRequest =  { currentUser: resp.response._id, requestedUser: resp2.response._id };        
         const removeResp: ResponseEnvelope<NeighborStatus> = await removeNeighborRequestHandler(removeReq);
         expect(removeResp.isOK).toBeTruthy();
         if (removeResp.response) {

@@ -97,8 +97,8 @@ export default class DatabaseController {
   private neighborMappings!: Collection<NeighborMappingSchema>;
 
   constructor() {
-    // assert(process.env.MONGO_URL, 'Must have Mongo URL to connect to database');
-    this.client = new MongoClient('mongodb://dev-user:cs4530COVEY@cluster-dev-shard-00-00.vpr5c.mongodb.net:27017,cluster-dev-shard-00-01.vpr5c.mongodb.net:27017,cluster-dev-shard-00-02.vpr5c.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-nii6qx-shard-0&authSource=admin&retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
+    assert(process.env.MONGO_URL, 'Must have Mongo URL to connect to database');
+    this.client = new MongoClient(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true });
   }
 
   /**
